@@ -1,0 +1,274 @@
+/* TMV 3D Effects - Advanced Visual Enhancements */
+
+/* 3D Perspective Container */
+.tmv-3d-perspective {
+    perspective: 1200px;
+    perspective-origin: center;
+}
+
+/* Card Tilt Effect */
+.tmv-3d-card {
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+.tmv-3d-card .tmv-form-header,
+.tmv-3d-card .tmv-verify-inner {
+    transform: translateZ(30px);
+}
+
+/* Floating Elements */
+.tmv-3d-float {
+    animation: tmv3d-float 6s ease-in-out infinite;
+}
+
+@keyframes tmv3d-float {
+    0%, 100% { 
+        transform: translateY(0) rotateX(0deg) rotateY(0deg); 
+    }
+    25% { 
+        transform: translateY(-8px) rotateX(2deg) rotateY(-1deg); 
+    }
+    50% { 
+        transform: translateY(-15px) rotateX(0deg) rotateY(2deg); 
+    }
+    75% { 
+        transform: translateY(-8px) rotateX(-2deg) rotateY(-1deg); 
+    }
+}
+
+/* 3D Input Focus */
+.tmv-input:focus {
+    transform: translateZ(10px) translateY(-2px);
+    box-shadow: 
+        0 10px 30px rgba(26, 92, 58, 0.15),
+        0 4px 6px rgba(0, 0, 0, 0.05),
+        inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* 3D Button Press */
+.tmv-3d-btn {
+    transform-style: preserve-3d;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 
+        0 6px 0 rgba(0, 0, 0, 0.15),
+        0 8px 25px rgba(26, 92, 58, 0.3);
+}
+
+.tmv-3d-btn:hover {
+    transform: translateY(-4px) rotateX(-5deg);
+    box-shadow: 
+        0 10px 0 rgba(0, 0, 0, 0.12),
+        0 15px 40px rgba(26, 92, 58, 0.4);
+}
+
+.tmv-3d-btn:active {
+    transform: translateY(2px) rotateX(5deg);
+    box-shadow: 
+        0 2px 0 rgba(0, 0, 0, 0.2),
+        0 4px 10px rgba(26, 92, 58, 0.3);
+}
+
+/* Glass Morphism Effect */
+.tmv-glass {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 3D Shield Animation */
+.tmv-shield-icon svg,
+.tmv-shield-verify svg {
+    filter: drop-shadow(0 8px 16px rgba(26, 92, 58, 0.3));
+    transition: all 0.4s ease;
+}
+
+.tmv-shield-icon:hover svg,
+.tmv-shield-verify:hover svg {
+    transform: rotateY(180deg) scale(1.1);
+    filter: drop-shadow(0 12px 24px rgba(26, 92, 58, 0.5));
+}
+
+/* Particle Background */
+.tmv-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.tmv-particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 215, 0, 0.3);
+    border-radius: 50%;
+    animation: tmv3d-particle 15s linear infinite;
+}
+
+@keyframes tmv3d-particle {
+    0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+    }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% {
+        transform: translateY(-100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* 3D Gradient Border */
+.tmv-gradient-border {
+    position: relative;
+    border-radius: var(--tmv-radius);
+}
+
+.tmv-gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: calc(var(--tmv-radius) + 2px);
+    background: linear-gradient(45deg, #1a5c3a, #ffd700, #1a5c3a, #ffd700);
+    background-size: 300% 300%;
+    animation: tmv3d-gradient-shift 4s ease infinite;
+    z-index: -1;
+}
+
+@keyframes tmv3d-gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* 3D Flip Card for Result */
+.tmv-flip-card {
+    transform-style: preserve-3d;
+    animation: tmv3d-reveal 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes tmv3d-reveal {
+    0% {
+        opacity: 0;
+        transform: perspective(1000px) rotateY(-90deg) scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: perspective(1000px) rotateY(0deg) scale(1);
+    }
+}
+
+/* Holographic Effect */
+.tmv-holographic {
+    position: relative;
+    overflow: hidden;
+}
+
+.tmv-holographic::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 215, 0, 0.05) 40%,
+        rgba(26, 92, 58, 0.05) 50%,
+        transparent 60%
+    );
+    animation: tmv3d-hologram 3s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes tmv3d-hologram {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 3D Status Badge */
+.tmv-status-3d {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateZ(5px);
+}
+
+.tmv-status-3d.verified {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+}
+
+.tmv-status-3d.pending {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+}
+
+/* Smooth Page Transitions */
+.tmv-fade-in {
+    animation: tmv3d-fadein 0.6s ease forwards;
+}
+
+@keyframes tmv3d-fadein {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Neon Glow */
+.tmv-neon-glow {
+    text-shadow: 
+        0 0 7px rgba(26, 92, 58, 0.5),
+        0 0 10px rgba(26, 92, 58, 0.3),
+        0 0 21px rgba(26, 92, 58, 0.2);
+}
+
+/* Wave Background */
+.tmv-wave-bg {
+    position: relative;
+}
+
+.tmv-wave-bg::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 1200 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,40 C300,80 900,0 1200,40 L1200,120 L0,120 Z' fill='%23f0f4f8'/%3E%3C/svg%3E") no-repeat;
+    background-size: cover;
+}
+
+/* Responsive 3D adjustments */
+@media (max-width: 768px) {
+    .tmv-3d-card:hover {
+        transform: none;
+    }
+    
+    .tmv-3d-btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .tmv-3d-card .tmv-form-header,
+    .tmv-3d-card .tmv-verify-inner {
+        transform: none;
+    }
+}

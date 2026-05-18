@@ -1,0 +1,440 @@
+/*
+Theme Name: TMV - Trademark Verification Theme
+Theme URI: https://dpdt-registry.gov.bd
+Author: DPDT Registry Cloud Interface
+Author URI: https://dpdt-registry.gov.bd
+Description: Advanced 3D WordPress Theme for Trademark Certificate Verification System. Features modern glassmorphism design, Three.js particle backgrounds, fully responsive layout, and high-level security. Established since 2009.
+Version: 2.0.0
+Requires at least: 5.0
+Tested up to: 6.5
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: tmv-theme
+Tags: one-column, custom-background, custom-logo, custom-menu, featured-images, threaded-comments, translation-ready
+*/
+
+/* ===== GLOBAL RESET & BASE ===== */
+:root {
+    --tmv-primary: #1a5c3a;
+    --tmv-primary-dark: #0d3d26;
+    --tmv-primary-light: #2d8a5e;
+    --tmv-accent: #ffd700;
+    --tmv-bg: #f0f4f8;
+    --tmv-bg-dark: #0f1923;
+    --tmv-text: #1a1a2e;
+    --tmv-text-light: #6b7280;
+    --tmv-white: #ffffff;
+    --tmv-border: #e5e7eb;
+    --tmv-radius: 16px;
+    --tmv-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    --tmv-font: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: var(--tmv-font);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--tmv-text);
+    background: var(--tmv-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+a {
+    color: var(--tmv-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+a:hover {
+    color: var(--tmv-primary-dark);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ===== HEADER ===== */
+.tmv-site-header {
+    background: linear-gradient(135deg, var(--tmv-primary-dark), var(--tmv-primary));
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.tmv-header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tmv-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tmv-logo-icon {
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.tmv-logo-icon svg {
+    width: 28px;
+    height: 28px;
+}
+
+.tmv-logo-text h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.3px;
+}
+
+.tmv-logo-text p {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* Navigation */
+.tmv-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tmv-nav a {
+    color: rgba(255, 255, 255, 0.85);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.tmv-nav a:hover,
+.tmv-nav a.active {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+.tmv-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 4px;
+}
+
+/* ===== MAIN CONTENT ===== */
+.tmv-main {
+    min-height: calc(100vh - 160px);
+}
+
+.tmv-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px;
+}
+
+/* ===== HOME PAGE ===== */
+.tmv-hero {
+    text-align: center;
+    padding: 80px 20px;
+    background: linear-gradient(135deg, var(--tmv-bg-dark), #1a2a3a, var(--tmv-primary-dark));
+    position: relative;
+    overflow: hidden;
+}
+
+.tmv-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 50%, rgba(26, 92, 58, 0.2), transparent 60%),
+                radial-gradient(circle at 70% 50%, rgba(255, 215, 0, 0.1), transparent 60%);
+}
+
+.tmv-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.tmv-hero h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 42px;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 16px;
+    line-height: 1.2;
+    letter-spacing: -1px;
+}
+
+.tmv-hero p {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 32px;
+    line-height: 1.7;
+}
+
+.tmv-hero-btns {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.tmv-hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 36px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.tmv-hero-btn-primary {
+    background: linear-gradient(135deg, var(--tmv-accent), #e6b800);
+    color: var(--tmv-bg-dark);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+}
+
+.tmv-hero-btn-primary:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 12px 35px rgba(255, 215, 0, 0.5);
+    color: var(--tmv-bg-dark);
+}
+
+.tmv-hero-btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.tmv-hero-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+    color: #fff;
+}
+
+/* Features Section */
+.tmv-features {
+    padding: 80px 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.tmv-features-title {
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--tmv-text);
+    margin-bottom: 48px;
+}
+
+.tmv-features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+}
+
+.tmv-feature-card {
+    background: var(--tmv-white);
+    border-radius: var(--tmv-radius);
+    padding: 32px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid var(--tmv-border);
+    position: relative;
+    overflow: hidden;
+}
+
+.tmv-feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--tmv-primary), var(--tmv-accent));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tmv-feature-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+}
+
+.tmv-feature-card:hover::before {
+    opacity: 1;
+}
+
+.tmv-feature-icon {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, rgba(26, 92, 58, 0.1), rgba(26, 92, 58, 0.05));
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    font-size: 28px;
+}
+
+.tmv-feature-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--tmv-text);
+    margin-bottom: 10px;
+}
+
+.tmv-feature-card p {
+    font-size: 14px;
+    color: var(--tmv-text-light);
+    line-height: 1.7;
+}
+
+/* ===== FOOTER ===== */
+.tmv-site-footer {
+    background: var(--tmv-bg-dark);
+    padding: 40px 24px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tmv-footer-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.tmv-footer-logo {
+    margin-bottom: 16px;
+}
+
+.tmv-footer-logo h3 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 18px;
+    color: #fff;
+    font-weight: 700;
+}
+
+.tmv-footer-text {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 8px;
+}
+
+.tmv-footer-established {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* ===== PAGE TEMPLATE ===== */
+.tmv-page-content {
+    padding: 0;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .tmv-nav {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--tmv-primary-dark);
+        flex-direction: column;
+        padding: 16px;
+        gap: 4px;
+    }
+    
+    .tmv-nav.active {
+        display: flex;
+    }
+    
+    .tmv-nav a {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .tmv-nav-toggle {
+        display: block;
+    }
+    
+    .tmv-hero h2 {
+        font-size: 28px;
+    }
+    
+    .tmv-hero p {
+        font-size: 15px;
+    }
+    
+    .tmv-features-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tmv-hero-btns {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .tmv-header-inner {
+        padding: 12px 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tmv-hero {
+        padding: 50px 16px;
+    }
+    
+    .tmv-hero h2 {
+        font-size: 24px;
+    }
+    
+    .tmv-logo-text h1 {
+        font-size: 14px;
+    }
+}
