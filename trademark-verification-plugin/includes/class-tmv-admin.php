@@ -1328,7 +1328,7 @@ class TMV_Admin {
                     $count++;
                     break;
                 case 'delete':
-                    wp_delete_post($id, true);
+                    wp_trash_post($id);
                     $count++;
                     break;
             }

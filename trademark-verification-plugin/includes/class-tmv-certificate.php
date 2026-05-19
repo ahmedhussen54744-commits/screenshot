@@ -323,16 +323,23 @@ class TMV_Certificate {
         $qr_size = 300;
         $qr_url = 'https://api.qrserver.com/v1/create-qr-code/?size=' . $qr_size . 'x' . $qr_size . '&data=' . urlencode($verify_url);
 
-        $qr_data = @file_get_contents($qr_url);
+        $qr_data = false;
+        $response = wp_remote_get($qr_url, array('timeout' => 5));
+        if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+            $qr_data = wp_remote_retrieve_body($response);
+        }
+
+        $x = self::WIDTH - 500;
+        $y = 3050;
+
         if (!$qr_data) {
-            // If fetch fails, draw a placeholder box
+            // If fetch fails, draw a text placeholder with verify URL
             $gray = imagecolorallocate($img, 200, 200, 200);
             $dark = imagecolorallocate($img, 80, 80, 80);
-            $x = self::WIDTH - 500;
-            $y = 3050;
             imagefilledrectangle($img, $x, $y, $x + $qr_size, $y + $qr_size, $gray);
             imagerectangle($img, $x, $y, $x + $qr_size, $y + $qr_size, $dark);
-            imagestring($img, 4, $x + 100, $y + 140, 'QR Code', $dark);
+            imagestring($img, 4, $x + 100, $y + 130, 'QR Code', $dark);
+            imagestring($img, 2, $x + 20, $y + 160, substr($verify_url, 0, 40), $dark);
             return;
         }
 
@@ -341,8 +348,6 @@ class TMV_Certificate {
             return;
         }
 
-        $x = self::WIDTH - 500;
-        $y = 3050;
         imagecopyresampled($img, $qr_img, $x, $y, 0, 0, $qr_size, $qr_size, imagesx($qr_img), imagesy($qr_img));
         imagedestroy($qr_img);
     }

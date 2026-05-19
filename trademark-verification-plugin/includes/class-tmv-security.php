@@ -5,6 +5,7 @@ class TMV_Security {
     
     public static function init() {
         add_action('init', array(__CLASS__, 'prevent_enumeration'));
+        add_action('init', array(__CLASS__, 'enforce_ip_blacklist'));
         add_action('wp_head', array(__CLASS__, 'add_copyright_protection'));
         add_action('wp_head', array(__CLASS__, 'add_security_meta'));
         add_filter('rest_authentication_errors', array(__CLASS__, 'restrict_rest_api'));
@@ -20,6 +21,17 @@ class TMV_Security {
         if (!is_admin() && isset($_GET['author'])) {
             wp_redirect(home_url(), 301);
             exit;
+        }
+    }
+    
+    public static function enforce_ip_blacklist() {
+        $blacklist = get_option('tmv_ip_blacklist', array());
+        if (empty($blacklist) || !is_array($blacklist)) {
+            return;
+        }
+        $ip = $_SERVER['REMOTE_ADDR'];
+        if (in_array($ip, $blacklist, true)) {
+            wp_die('Access denied. Your IP address has been blocked.', 'Forbidden', array('response' => 403));
         }
     }
     

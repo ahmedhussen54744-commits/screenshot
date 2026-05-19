@@ -15,7 +15,7 @@
     <div class="tmv-header-inner">
         <a href="<?php echo home_url('/'); ?>" class="tmv-logo">
             <div class="tmv-logo-icon">
-                <?php echo TMV_Logos::get_dpdt_logo_html(44, 44); ?>
+                <?php if (class_exists('TMV_Logos')) { echo TMV_Logos::get_dpdt_logo_html(44, 44); } else { echo 'DPDT'; } ?>
             </div>
             <div class="tmv-logo-text">
                 <h1><?php bloginfo('name'); ?></h1>

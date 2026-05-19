@@ -3,7 +3,7 @@
 <footer class="tmv-site-footer">
     <div class="tmv-footer-content">
         <div class="tmv-footer-logo">
-            <?php echo TMV_Logos::get_bd_seal_html(60, 60); ?>
+            <?php if (class_exists('TMV_Logos')) { echo TMV_Logos::get_bd_seal_html(60, 60); } ?>
             <h3>Trademark Verification System</h3>
         </div>
         <p class="tmv-footer-text">

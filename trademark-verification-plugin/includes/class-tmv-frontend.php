@@ -402,7 +402,7 @@ class TMV_Frontend {
             'time' => current_time('mysql')
         );
         if (count($log) > 500) $log = array_slice($log, -500);
-        update_option('tmv_verification_log', $log);
+        update_option('tmv_verification_log', $log, false);
         
         if (!$query->have_posts()) {
             wp_send_json_error(array('message' => 'No verified trademark found with this number.'));

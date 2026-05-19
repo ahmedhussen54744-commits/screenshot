@@ -456,6 +456,15 @@ class TMV_Auth {
             wp_send_json_error(array('message' => 'Security check failed.'));
         }
 
+        // Rate limiting: 10 attempts per hour per IP
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $transient_key = 'tmv_rate_login_' . md5($ip);
+        $attempts = get_transient($transient_key);
+        if ($attempts && $attempts >= 10) {
+            wp_send_json_error(array('message' => 'Too many login attempts. Please try again later.'));
+        }
+        set_transient($transient_key, ($attempts ? $attempts + 1 : 1), 3600);
+
         $login = sanitize_text_field($_POST['tmv_user_login'] ?? '');
         $password = $_POST['tmv_user_pass'] ?? '';
         $remember = !empty($_POST['tmv_remember']);
@@ -476,6 +485,12 @@ class TMV_Auth {
             wp_send_json_error(array('message' => 'Invalid credentials. Please try again.'));
         }
 
+        // Check if user is banned
+        if (get_user_meta($user->ID, 'tmv_user_banned', true)) {
+            wp_logout();
+            wp_send_json_error(array('message' => 'Your account has been suspended.'));
+        }
+
         wp_send_json_success(array(
             'message' => 'Login successful! Redirecting...',
             'redirect' => home_url('/dashboard/'),
@@ -489,6 +504,15 @@ class TMV_Auth {
         if (!wp_verify_nonce($_POST['tmv_nonce'] ?? '', 'tmv_auth_nonce')) {
             wp_send_json_error(array('message' => 'Security check failed.'));
         }
+
+        // Rate limiting: 5 attempts per hour per IP
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $transient_key = 'tmv_rate_register_' . md5($ip);
+        $attempts = get_transient($transient_key);
+        if ($attempts && $attempts >= 5) {
+            wp_send_json_error(array('message' => 'Too many registration attempts. Please try again later.'));
+        }
+        set_transient($transient_key, ($attempts ? $attempts + 1 : 1), 3600);
 
         $first_name = sanitize_text_field($_POST['tmv_first_name'] ?? '');
         $last_name = sanitize_text_field($_POST['tmv_last_name'] ?? '');
@@ -566,18 +590,13 @@ class TMV_Auth {
 
         $user = get_user_by('email', $email);
 
-        if (!$user) {
-            wp_send_json_error(array('message' => 'No account found with that email address.'));
+        if ($user) {
+            $result = retrieve_password($user->user_login);
         }
 
-        $result = retrieve_password($user->user_login);
-
-        if (is_wp_error($result)) {
-            wp_send_json_error(array('message' => 'Unable to send reset email. Please try again later.'));
-        }
-
+        // Always return the same message regardless of whether the email exists
         wp_send_json_success(array(
-            'message' => 'Password reset link has been sent to your email address.',
+            'message' => 'If an account exists with that email, a password reset link has been sent.',
         ));
     }
 }
