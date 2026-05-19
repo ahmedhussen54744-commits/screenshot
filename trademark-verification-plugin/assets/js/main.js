@@ -21,7 +21,6 @@
         $btnLoader.show();
         
         var formData = new FormData(this);
-        formData.append('action', 'tmv_submit_application');
         
         $.ajax({
             url: tmvAjax.url,
@@ -159,6 +158,12 @@
         html += detailItem('Status', '<span class="tmv-status-3d verified">&#10003; Verified</span>');
         html += '</div>';
         
+        // QR Code Section
+        html += '<div class="tmv-qr-section" style="text-align:center;margin-top:20px;padding:15px;border-top:1px solid #eee;">';
+        html += '<p style="font-size:12px;color:#666;margin-bottom:8px;">Scan to Verify</p>';
+        html += '<div id="tmv-result-qr" style="display:inline-block;"></div>';
+        html += '</div>';
+        
         html += '</div></div>';
         
         // Search Again button
@@ -167,6 +172,22 @@
         html += '</div>';
         
         $('#tmv-verify-result').html(html);
+        
+        // Generate QR code after DOM is updated
+        if (typeof QRCode !== 'undefined' && data.verify_code) {
+            var verifyUrl = tmvAjax.verify_url + '?code=' + data.verify_code;
+            new QRCode(document.getElementById('tmv-result-qr'), {
+                text: verifyUrl,
+                width: 150,
+                height: 150
+            });
+        } else if (data.verify_code) {
+            var verifyUrl = tmvAjax.verify_url + '?code=' + data.verify_code;
+            var qrContainer = document.getElementById('tmv-result-qr');
+            if (qrContainer) {
+                qrContainer.innerHTML = '<a href="' + verifyUrl + '" target="_blank" style="word-break:break-all;font-size:12px;color:#1a5c3a;">' + verifyUrl + '</a>';
+            }
+        }
     }
 
     function renderVerifyError(message) {

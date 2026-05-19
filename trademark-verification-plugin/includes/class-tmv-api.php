@@ -15,8 +15,9 @@ class TMV_API {
     
     public static function handle_verify_redirect() {
         $code = get_query_var('tmv_code');
+        
         if (!empty($code)) {
-            // Auto-fill the verification code
+            // Auto-fill the verification code (rewrite rule path only)
             add_action('wp_footer', function() use ($code) {
                 ?>
                 <script>
@@ -26,7 +27,7 @@ class TMV_API {
                             input.value = '<?php echo esc_js($code); ?>';
                             // Auto-submit
                             setTimeout(function() {
-                                document.getElementById('tmv-verify-form').dispatchEvent(new Event('submit'));
+                                document.getElementById('tmv-verify-form').dispatchEvent(new Event('submit', {bubbles: true}));
                             }, 500);
                         }
                     });
@@ -56,6 +57,6 @@ class TMV_API {
         $verify_code = get_post_meta($post_id, 'tmv_verify_code', true);
         $base_url = get_option('tmv_verify_base_url', home_url('/verify/'));
         
-        return rtrim($base_url, '/') . '/' . $verify_code;
+        return rtrim($base_url, '/') . '?code=' . $verify_code;
     }
 }

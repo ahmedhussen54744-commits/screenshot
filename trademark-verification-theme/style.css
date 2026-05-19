@@ -77,6 +77,27 @@ img {
     top: 0;
     z-index: 1000;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(90deg, var(--tmv-primary), var(--tmv-accent), #00d4ff, var(--tmv-primary)) 1;
+    animation: tmv-header-border 6s linear infinite;
+    background-clip: padding-box;
+}
+
+.tmv-site-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--tmv-primary), var(--tmv-accent), #00d4ff, var(--tmv-primary));
+    background-size: 300% 100%;
+    animation: tmv-border-shift 4s linear infinite;
+}
+
+@keyframes tmv-border-shift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
 }
 
 .tmv-header-inner {
@@ -186,6 +207,38 @@ img {
                 radial-gradient(circle at 70% 50%, rgba(255, 215, 0, 0.1), transparent 60%);
 }
 
+.tmv-hero::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background-image:
+        radial-gradient(3px 3px at 10% 20%, rgba(255,215,0,0.3), transparent),
+        radial-gradient(2px 2px at 25% 60%, rgba(26,92,58,0.4), transparent),
+        radial-gradient(3px 3px at 40% 35%, rgba(0,212,255,0.2), transparent),
+        radial-gradient(2px 2px at 55% 80%, rgba(255,215,0,0.3), transparent),
+        radial-gradient(3px 3px at 70% 15%, rgba(26,92,58,0.3), transparent),
+        radial-gradient(2px 2px at 85% 55%, rgba(0,212,255,0.25), transparent),
+        radial-gradient(2px 2px at 15% 85%, rgba(255,255,255,0.2), transparent),
+        radial-gradient(3px 3px at 90% 75%, rgba(255,215,0,0.2), transparent),
+        radial-gradient(2px 2px at 50% 45%, rgba(26,92,58,0.25), transparent),
+        radial-gradient(2px 2px at 65% 90%, rgba(0,212,255,0.2), transparent);
+    background-size: 200% 200%;
+    animation: tmv-hero-dots-float 25s linear infinite;
+    z-index: 0;
+}
+
+@keyframes tmv-hero-dots-float {
+    0% { background-position: 0% 0%; }
+    25% { background-position: 100% 50%; }
+    50% { background-position: 50% 100%; }
+    75% { background-position: 0% 50%; }
+    100% { background-position: 0% 0%; }
+}
+
 .tmv-hero-content {
     position: relative;
     z-index: 1;
@@ -286,6 +339,8 @@ img {
     border: 1px solid var(--tmv-border);
     position: relative;
     overflow: hidden;
+    perspective: 800px;
+    transform-style: preserve-3d;
 }
 
 .tmv-feature-card::before {
@@ -301,8 +356,11 @@ img {
 }
 
 .tmv-feature-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+    transform: perspective(800px) rotateX(-3deg) rotateY(2deg) translateY(-8px) scale(1.02);
+    box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.12),
+        0 0 20px rgba(26, 92, 58, 0.15),
+        0 0 40px rgba(26, 92, 58, 0.05);
 }
 
 .tmv-feature-card:hover::before {
@@ -340,6 +398,27 @@ img {
     padding: 40px 24px;
     text-align: center;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.tmv-site-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(-45deg, rgba(26,92,58,0.03), rgba(255,215,0,0.02), rgba(0,212,255,0.02), rgba(26,92,58,0.03));
+    background-size: 400% 400%;
+    animation: tmv-footer-bg 20s ease infinite;
+    pointer-events: none;
+}
+
+@keyframes tmv-footer-bg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 .tmv-footer-content {
@@ -422,6 +501,23 @@ img {
     
     .tmv-header-inner {
         padding: 12px 16px;
+    }
+
+    .tmv-feature-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .tmv-site-header::after {
+        display: none;
+    }
+
+    .tmv-hero::after {
+        display: none;
+    }
+
+    .tmv-site-footer::before {
+        display: none;
     }
 }
 

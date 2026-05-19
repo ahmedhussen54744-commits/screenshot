@@ -15,9 +15,21 @@
     <div class="tmv-header-inner">
         <a href="<?php echo home_url('/'); ?>" class="tmv-logo">
             <div class="tmv-logo-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
-                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
-                    <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg viewBox="0 0 120 120" width="44" height="44">
+                    <circle cx="60" cy="60" r="58" fill="#1a5c3a" stroke="#ffd700" stroke-width="2"/>
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="#fff" stroke-width="1"/>
+                    <line x1="60" y1="15" x2="60" y2="105" stroke="#fff" stroke-width="0.5" opacity="0.5"/>
+                    <line x1="15" y1="60" x2="105" y2="60" stroke="#fff" stroke-width="0.5" opacity="0.5"/>
+                    <path d="M35 35 L38 28 L41 35 M36 32 Q38 25 40 32" fill="none" stroke="#ffd700" stroke-width="1.5"/>
+                    <path d="M33 40 Q38 38 43 40" fill="none" stroke="#ffd700" stroke-width="1"/>
+                    <path d="M75 30 L80 27 L85 30 L80 33 Z" fill="#ffd700"/>
+                    <line x1="80" y1="33" x2="80" y2="40" stroke="#ffd700" stroke-width="1"/>
+                    <circle cx="38" cy="78" r="5" fill="none" stroke="#ffd700" stroke-width="1"/>
+                    <circle cx="38" cy="78" r="2" fill="#ffd700"/>
+                    <ellipse cx="38" cy="78" rx="8" ry="3" fill="none" stroke="#ffd700" stroke-width="0.8" transform="rotate(45 38 78)"/>
+                    <path d="M75 75 L78 68 L81 75 L84 68 L87 75 L87 85 L75 85 Z" fill="none" stroke="#ffd700" stroke-width="1.2"/>
+                    <circle cx="60" cy="60" r="12" fill="#fff" opacity="0.15"/>
+                    <text x="60" y="63" text-anchor="middle" font-size="8" fill="#fff" font-weight="bold">DPDT</text>
                 </svg>
             </div>
             <div class="tmv-logo-text">

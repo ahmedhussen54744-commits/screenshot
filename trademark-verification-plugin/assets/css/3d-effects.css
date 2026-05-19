@@ -257,7 +257,145 @@
     background-size: cover;
 }
 
-/* Responsive 3D adjustments */
+/* ===== ENHANCED NEON GLOW ON CARDS ===== */
+.tmv-3d-card {
+    box-shadow: 
+        0 0 15px rgba(26, 92, 58, 0.3),
+        0 0 30px rgba(26, 92, 58, 0.1),
+        0 0 60px rgba(255, 215, 0, 0.05),
+        0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: tmv-neon-pulse 4s ease-in-out infinite;
+}
+
+@keyframes tmv-neon-pulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(26,92,58,0.3), 0 0 30px rgba(26,92,58,0.1), 0 25px 50px -12px rgba(0,0,0,0.25); }
+    50% { box-shadow: 0 0 25px rgba(26,92,58,0.5), 0 0 50px rgba(26,92,58,0.2), 0 0 80px rgba(255,215,0,0.1), 0 25px 50px -12px rgba(0,0,0,0.3); }
+}
+
+/* ===== ANIMATED GRADIENT BACKGROUNDS ===== */
+.tmv-verify-container,
+.tmv-apply-container {
+    background: linear-gradient(-45deg, #0f1923, #1a2a3a, #0d3d26, #0a1628, #142d1f);
+    background-size: 400% 400%;
+    animation: tmv-gradient-shift-bg 15s ease infinite;
+}
+
+@keyframes tmv-gradient-shift-bg {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ===== 3D TEXT SHADOWS ON TITLES ===== */
+.tmv-form-title,
+.tmv-verify-title,
+.tmv-portal-title {
+    text-shadow: 
+        0 1px 0 rgba(0,0,0,0.1),
+        0 2px 0 rgba(0,0,0,0.08),
+        0 3px 0 rgba(0,0,0,0.06),
+        0 4px 0 rgba(0,0,0,0.04),
+        0 5px 0 rgba(0,0,0,0.02),
+        0 8px 15px rgba(0,0,0,0.1);
+}
+
+/* ===== BREATHING/PULSING ANIMATION ===== */
+.tmv-shield-icon,
+.tmv-shield-verify,
+.tmv-govt-logo {
+    animation: tmv-breathe 3s ease-in-out infinite;
+}
+
+@keyframes tmv-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* ===== FLOATING PARTICLE OVERLAY (CSS) ===== */
+.tmv-css-particles,
+.tmv-verify-container::after,
+.tmv-apply-container::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    background-image: 
+        radial-gradient(2px 2px at 20% 30%, rgba(255,215,0,0.3), transparent),
+        radial-gradient(2px 2px at 40% 70%, rgba(26,92,58,0.4), transparent),
+        radial-gradient(1px 1px at 60% 20%, rgba(0,212,255,0.3), transparent),
+        radial-gradient(2px 2px at 80% 50%, rgba(255,215,0,0.2), transparent),
+        radial-gradient(1px 1px at 10% 80%, rgba(255,0,110,0.2), transparent),
+        radial-gradient(2px 2px at 70% 90%, rgba(26,92,58,0.3), transparent),
+        radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,0.3), transparent),
+        radial-gradient(2px 2px at 90% 40%, rgba(0,212,255,0.2), transparent);
+    background-size: 200% 200%;
+    animation: tmv-css-float 20s linear infinite;
+}
+
+@keyframes tmv-css-float {
+    0% { background-position: 0% 0%; }
+    25% { background-position: 50% 100%; }
+    50% { background-position: 100% 50%; }
+    75% { background-position: 50% 0%; }
+    100% { background-position: 0% 0%; }
+}
+
+/* ===== MORE DRAMATIC FLIP CARD REVEAL ===== */
+@keyframes tmv3d-reveal {
+    0% { opacity: 0; transform: perspective(1000px) rotateY(-180deg) rotateX(10deg) scale(0.5); }
+    60% { transform: perspective(1000px) rotateY(10deg) rotateX(-5deg) scale(1.05); }
+    100% { opacity: 1; transform: perspective(1000px) rotateY(0deg) rotateX(0deg) scale(1); }
+}
+
+/* ===== SHIMMER EFFECT ON RESULT HEADER ===== */
+.tmv-result-header {
+    position: relative;
+    overflow: hidden;
+}
+
+.tmv-result-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: tmv-shimmer 3s infinite;
+}
+
+@keyframes tmv-shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* ===== PAGE TRANSITION CSS ===== */
+.tmv-page-content {
+    transition: opacity 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.tmv-page-content.tmv-entering {
+    opacity: 0;
+    transform: perspective(1000px) rotateY(-5deg) translateZ(-50px);
+}
+
+.tmv-stagger-item {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.tmv-stagger-item.tmv-revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ===== Responsive 3D adjustments ===== */
 @media (max-width: 768px) {
     .tmv-3d-card:hover {
         transform: none;
@@ -270,5 +408,41 @@
     .tmv-3d-card .tmv-form-header,
     .tmv-3d-card .tmv-verify-inner {
         transform: none;
+    }
+
+    .tmv-3d-card {
+        animation: none;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .tmv-verify-container::after,
+    .tmv-apply-container::after {
+        display: none;
+    }
+
+    .tmv-verify-container,
+    .tmv-apply-container {
+        animation: none;
+        background-size: 100% 100%;
+    }
+
+    .tmv-shield-icon,
+    .tmv-shield-verify,
+    .tmv-govt-logo {
+        animation: none;
+    }
+
+    .tmv-result-header::after {
+        display: none;
+    }
+
+    .tmv-page-content.tmv-entering {
+        transform: none;
+        opacity: 0;
+    }
+
+    @keyframes tmv3d-reveal {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
     }
 }

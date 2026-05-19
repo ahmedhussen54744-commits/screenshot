@@ -108,6 +108,7 @@ function tmv_enqueue_assets() {
     wp_enqueue_style('tmv-main', TMV_PLUGIN_URL . 'assets/css/main.css', array(), TMV_VERSION);
     wp_enqueue_style('tmv-3d', TMV_PLUGIN_URL . 'assets/css/3d-effects.css', array(), TMV_VERSION);
     wp_enqueue_script('tmv-three', 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', array(), null, true);
+    wp_enqueue_script('tmv-qrcode', 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js', array(), null, true);
     wp_enqueue_script('tmv-main', TMV_PLUGIN_URL . 'assets/js/main.js', array('jquery'), TMV_VERSION, true);
     wp_enqueue_script('tmv-3d', TMV_PLUGIN_URL . 'assets/js/3d-effects.js', array('tmv-three'), TMV_VERSION, true);
     
@@ -123,7 +124,8 @@ add_action('admin_enqueue_scripts', 'tmv_admin_enqueue');
 function tmv_admin_enqueue($hook) {
     if (strpos($hook, 'trademark') !== false || get_post_type() === 'trademark_app') {
         wp_enqueue_style('tmv-admin', TMV_PLUGIN_URL . 'assets/css/admin.css', array(), TMV_VERSION);
-        wp_enqueue_script('tmv-admin', TMV_PLUGIN_URL . 'assets/js/admin.js', array('jquery', 'wp-media'), TMV_VERSION, true);
+        wp_enqueue_script('tmv-qrcode', 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js', array(), null, true);
+        wp_enqueue_script('tmv-admin', TMV_PLUGIN_URL . 'assets/js/admin.js', array('jquery'), TMV_VERSION, true);
         wp_enqueue_media();
         wp_localize_script('tmv-admin', 'tmvAdmin', array(
             'nonce' => wp_create_nonce('tmv_admin_nonce'),
