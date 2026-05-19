@@ -135,6 +135,107 @@ function tmv_activate_plugin() {
             'post_content' => '[tmv_password_reset]',
         ));
     }
+
+    // Create FAQ page
+    $faq_page = get_page_by_path('faq');
+    if (!$faq_page) {
+        wp_insert_post(array(
+            'post_title' => 'Frequently Asked Questions',
+            'post_name' => 'faq',
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'post_content' => '[tmv_faq_page]',
+        ));
+    }
+
+    // Create Contact page
+    $contact_page = get_page_by_path('contact');
+    if (!$contact_page) {
+        wp_insert_post(array(
+            'post_title' => 'Contact Us',
+            'post_name' => 'contact',
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'post_content' => '[tmv_contact_page]',
+        ));
+    }
+
+    // Create About page
+    $about_page = get_page_by_path('about');
+    if (!$about_page) {
+        wp_insert_post(array(
+            'post_title' => 'About Us',
+            'post_name' => 'about',
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'post_content' => '[tmv_about_page]',
+        ));
+    }
+
+    // Create Services page
+    $services_page = get_page_by_path('services');
+    if (!$services_page) {
+        wp_insert_post(array(
+            'post_title' => 'Our Services',
+            'post_name' => 'services',
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'post_content' => '[tmv_services_page]',
+        ));
+    }
+
+    // Create Search page
+    $search_page = get_page_by_path('search');
+    if (!$search_page) {
+        wp_insert_post(array(
+            'post_title' => 'Search Trademarks',
+            'post_name' => 'search',
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'post_content' => '[tmv_verification_portal]',
+        ));
+    }
+
+    // Default FAQ entries
+    if (get_option('tmv_faqs') === false) {
+        $default_faqs = array(
+            array(
+                'question' => 'What is trademark verification?',
+                'answer'   => 'Trademark verification is the process of confirming the authenticity and registration status of a trademark through our official digital platform.',
+            ),
+            array(
+                'question' => 'How do I verify a trademark certificate?',
+                'answer'   => 'Enter your TM number or verification code in the verification portal. The system will search our database and display the registration details if the trademark is valid.',
+            ),
+            array(
+                'question' => 'How long does trademark registration take?',
+                'answer'   => 'The trademark registration process typically takes 18-24 months from the date of application, subject to examination and any opposition proceedings.',
+            ),
+            array(
+                'question' => 'What documents are required for trademark registration?',
+                'answer'   => 'You need a completed TMR-1 form, brand logo, proof of use (if applicable), applicant identity documents, and the prescribed fee payment receipt.',
+            ),
+            array(
+                'question' => 'How do I contact the DPDT office?',
+                'answer'   => 'You can reach us through the contact page, by phone, email, or by visiting our physical office during working hours.',
+            ),
+        );
+        add_option('tmv_faqs', $default_faqs);
+    }
+
+    // Default contact info
+    if (get_option('tmv_contact_email') === false) {
+        add_option('tmv_contact_email', 'info@dpdt-registry.gov.bd');
+    }
+    if (get_option('tmv_contact_phone') === false) {
+        add_option('tmv_contact_phone', '+880-2-1234567');
+    }
+    if (get_option('tmv_contact_address') === false) {
+        add_option('tmv_contact_address', 'Department of Patents, Designs & Trademarks, Dhaka, Bangladesh');
+    }
+    if (get_option('tmv_contact_hours') === false) {
+        add_option('tmv_contact_hours', 'Sunday - Thursday: 9:00 AM - 5:00 PM');
+    }
 }
 
 // Deactivation Hook

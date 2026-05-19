@@ -23,20 +23,29 @@
             </div>
         </a>
         
-        <button class="tmv-nav-toggle" aria-label="Menu" onclick="document.querySelector('.tmv-nav').classList.toggle('active')">&#9776;</button>
+        <button class="tmv-nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+            <span class="tmv-hamburger"></span>
+        </button>
         
-        <nav class="tmv-nav">
-            <a href="<?php echo home_url('/'); ?>" <?php if (is_front_page()) echo 'class="active"'; ?>>Home</a>
-            <a href="<?php echo home_url('/verify/'); ?>" <?php if (is_page('verify')) echo 'class="active"'; ?>>Verify</a>
-            <a href="<?php echo home_url('/apply/'); ?>" <?php if (is_page('apply')) echo 'class="active"'; ?>>Apply</a>
-            <a href="<?php echo home_url('/blog/'); ?>" <?php if (is_home() || is_single() || is_archive()) echo 'class="active"'; ?>>News</a>
-            <?php if (is_user_logged_in()) : ?>
-                <a href="<?php echo home_url('/dashboard/'); ?>" <?php if (is_page('dashboard')) echo 'class="active"'; ?>>Dashboard</a>
-                <a href="<?php echo wp_logout_url(home_url()); ?>">Logout</a>
-            <?php else : ?>
-                <a href="<?php echo home_url('/login/'); ?>" <?php if (is_page('login')) echo 'class="active"'; ?>>Login</a>
-                <a href="<?php echo home_url('/register/'); ?>" <?php if (is_page('register')) echo 'class="active"'; ?>>Register</a>
-            <?php endif; ?>
+        <nav class="tmv-nav" role="navigation" aria-label="Primary Navigation">
+            <?php
+            wp_nav_menu(array(
+                'theme_location' => 'primary',
+                'container'      => false,
+                'items_wrap'     => '%3$s',
+                'depth'          => 2,
+                'fallback_cb'    => 'tmv_primary_nav_fallback',
+            ));
+            ?>
+            <div class="tmv-nav-user">
+                <?php if (is_user_logged_in()) : ?>
+                    <a href="<?php echo home_url('/dashboard/'); ?>" class="tmv-nav-btn tmv-nav-btn--dashboard"><?php echo esc_html(wp_get_current_user()->display_name); ?></a>
+                    <a href="<?php echo wp_logout_url(home_url('/')); ?>" class="tmv-nav-btn tmv-nav-btn--logout">Logout</a>
+                <?php else : ?>
+                    <a href="<?php echo home_url('/login/'); ?>" class="tmv-nav-btn tmv-nav-btn--login">Login</a>
+                    <a href="<?php echo home_url('/register/'); ?>" class="tmv-nav-btn tmv-nav-btn--register">Register</a>
+                <?php endif; ?>
+            </div>
         </nav>
     </div>
 </header>

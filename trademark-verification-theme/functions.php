@@ -27,7 +27,8 @@ function tmv_theme_setup() {
     
     register_nav_menus(array(
         'primary' => 'Primary Navigation',
-        'footer' => 'Footer Navigation',
+        'footer'  => 'Footer Navigation',
+        'mobile'  => 'Mobile Navigation',
     ));
 }
 
@@ -142,6 +143,33 @@ function tmv_body_classes($classes) {
         $classes[] = 'tmv-apply-page';
     }
     return $classes;
+}
+
+// Primary Nav Fallback - shows all essential pages when no menu is assigned
+function tmv_primary_nav_fallback() {
+    $menu_items = array(
+        array('url' => home_url('/'),          'label' => 'Home',             'slug' => ''),
+        array('url' => home_url('/verify/'),   'label' => 'Verify Trademark', 'slug' => 'verify'),
+        array('url' => home_url('/apply/'),    'label' => 'Apply',            'slug' => 'apply'),
+        array('url' => home_url('/blog/'),     'label' => 'News',             'slug' => 'blog'),
+        array('url' => home_url('/services/'), 'label' => 'Services',         'slug' => 'services'),
+        array('url' => home_url('/faq/'),      'label' => 'FAQ',              'slug' => 'faq'),
+        array('url' => home_url('/about/'),    'label' => 'About Us',         'slug' => 'about'),
+        array('url' => home_url('/contact/'),  'label' => 'Contact',          'slug' => 'contact'),
+        array('url' => home_url('/search/'),   'label' => 'Search',           'slug' => 'search'),
+    );
+
+    foreach ($menu_items as $item) {
+        $active_class = '';
+        if (empty($item['slug']) && is_front_page()) {
+            $active_class = ' class="active"';
+        } elseif (!empty($item['slug']) && is_page($item['slug'])) {
+            $active_class = ' class="active"';
+        } elseif ($item['slug'] === 'blog' && (is_home() || is_single() || is_archive())) {
+            $active_class = ' class="active"';
+        }
+        echo '<a href="' . esc_url($item['url']) . '"' . $active_class . '>' . esc_html($item['label']) . '</a>';
+    }
 }
 
 // Customizer Settings
