@@ -382,13 +382,56 @@ class TMV_Admin {
             update_option('tmv_verify_base_url', esc_url_raw($_POST['tmv_verify_base_url']));
             update_option('tmv_copyright_text', sanitize_text_field($_POST['tmv_copyright_text']));
             update_option('tmv_qr_size', intval($_POST['tmv_qr_size']));
+            update_option('tmv_dpdt_logo', intval($_POST['tmv_dpdt_logo']));
+            update_option('tmv_bd_govt_seal', intval($_POST['tmv_bd_govt_seal']));
             echo '<div class="notice notice-success"><p>Settings saved!</p></div>';
         }
+
+        $dpdt_logo_id = intval(get_option('tmv_dpdt_logo', 0));
+        $bd_seal_id = intval(get_option('tmv_bd_govt_seal', 0));
+        $dpdt_logo_url = $dpdt_logo_id ? wp_get_attachment_url($dpdt_logo_id) : '';
+        $bd_seal_url = $bd_seal_id ? wp_get_attachment_url($bd_seal_id) : '';
         ?>
         <div class="wrap">
             <h1>TMV Settings</h1>
             <form method="post">
                 <?php wp_nonce_field('tmv_settings', 'tmv_settings_nonce'); ?>
+
+                <h2>Logo Management</h2>
+                <p class="description">Upload custom logos to replace the default inline SVGs. These logos appear in the header, footer, certificate, apply form, and verify page.</p>
+                <table class="form-table">
+                    <tr>
+                        <th>DPDT Logo (Top-Left)</th>
+                        <td>
+                            <input type="hidden" name="tmv_dpdt_logo" id="tmv_dpdt_logo" value="<?php echo esc_attr($dpdt_logo_id); ?>" />
+                            <div id="tmv-dpdt-logo-preview" style="margin-bottom:10px;">
+                                <?php if ($dpdt_logo_url): ?>
+                                    <img src="<?php echo esc_url($dpdt_logo_url); ?>" style="max-width:80px;height:auto;" />
+                                <?php endif; ?>
+                            </div>
+                            <button type="button" class="button tmv-upload-btn" data-target="tmv_dpdt_logo" data-preview="tmv-dpdt-logo-preview" data-type="image">Upload DPDT Logo</button>
+                            <button type="button" class="button tmv-remove-btn" data-target="tmv_dpdt_logo" data-preview="tmv-dpdt-logo-preview">Reset to Default SVG</button>
+                            <p class="description">Appears in: header (top-left), apply form header, certificate. Leave empty to use the default DPDT SVG.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Bangladesh Govt Seal (Top-Right)</th>
+                        <td>
+                            <input type="hidden" name="tmv_bd_govt_seal" id="tmv_bd_govt_seal" value="<?php echo esc_attr($bd_seal_id); ?>" />
+                            <div id="tmv-bd-seal-preview" style="margin-bottom:10px;">
+                                <?php if ($bd_seal_url): ?>
+                                    <img src="<?php echo esc_url($bd_seal_url); ?>" style="max-width:80px;height:auto;" />
+                                <?php endif; ?>
+                            </div>
+                            <button type="button" class="button tmv-upload-btn" data-target="tmv_bd_govt_seal" data-preview="tmv-bd-seal-preview" data-type="image">Upload BD Govt Seal</button>
+                            <button type="button" class="button tmv-remove-btn" data-target="tmv_bd_govt_seal" data-preview="tmv-bd-seal-preview">Reset to Default SVG</button>
+                            <p class="description">Appears in: footer, verify page header. Leave empty to use the default Bangladesh Govt seal SVG.</p>
+                        </td>
+                    </tr>
+                </table>
+
+                <hr />
+                <h2>General Settings</h2>
                 <table class="form-table">
                     <tr>
                         <th>Verify Base URL</th>

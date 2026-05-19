@@ -685,6 +685,36 @@ body {
     50% { transform: translateY(-5px); }
 }
 
+/* ===== LOGO IMAGE SIZING ===== */
+.tmv-dpdt-logo img,
+.tmv-logo-icon img {
+    object-fit: contain;
+    max-width: 80px;
+    max-height: 80px;
+    display: block;
+}
+
+.tmv-logo-icon img {
+    max-width: 44px;
+    max-height: 44px;
+}
+
+.tmv-govt-logo img {
+    object-fit: contain;
+    max-width: 80px;
+    max-height: 80px;
+    display: block;
+    margin: 0 auto;
+}
+
+.tmv-footer-logo img {
+    object-fit: contain;
+    max-width: 60px;
+    max-height: 60px;
+    display: block;
+    margin: 0 auto 12px;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
     .tmv-apply-container {

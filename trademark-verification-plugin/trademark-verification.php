@@ -38,6 +38,7 @@ require_once TMV_PLUGIN_DIR . 'includes/class-tmv-admin.php';
 require_once TMV_PLUGIN_DIR . 'includes/class-tmv-frontend.php';
 require_once TMV_PLUGIN_DIR . 'includes/class-tmv-security.php';
 require_once TMV_PLUGIN_DIR . 'includes/class-tmv-api.php';
+require_once TMV_PLUGIN_DIR . 'includes/class-tmv-logos.php';
 
 // Activation Hook
 register_activation_hook(__FILE__, 'tmv_activate_plugin');
@@ -122,7 +123,7 @@ function tmv_enqueue_assets() {
 // Admin Enqueue
 add_action('admin_enqueue_scripts', 'tmv_admin_enqueue');
 function tmv_admin_enqueue($hook) {
-    if (strpos($hook, 'trademark') !== false || get_post_type() === 'trademark_app') {
+    if (strpos($hook, 'trademark') !== false || get_post_type() === 'trademark_app' || strpos($hook, 'tmv-settings') !== false) {
         wp_enqueue_style('tmv-admin', TMV_PLUGIN_URL . 'assets/css/admin.css', array(), TMV_VERSION);
         wp_enqueue_script('tmv-qrcode', 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js', array(), null, true);
         wp_enqueue_script('tmv-admin', TMV_PLUGIN_URL . 'assets/js/admin.js', array('jquery'), TMV_VERSION, true);
