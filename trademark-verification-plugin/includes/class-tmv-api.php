@@ -15,6 +15,12 @@ class TMV_API {
     
     public static function handle_verify_redirect() {
         $code = get_query_var('tmv_code');
+        
+        // Also check for ?code= query parameter
+        if (empty($code) && isset($_GET['code'])) {
+            $code = sanitize_text_field($_GET['code']);
+        }
+        
         if (!empty($code)) {
             // Auto-fill the verification code
             add_action('wp_footer', function() use ($code) {
@@ -26,7 +32,7 @@ class TMV_API {
                             input.value = '<?php echo esc_js($code); ?>';
                             // Auto-submit
                             setTimeout(function() {
-                                document.getElementById('tmv-verify-form').dispatchEvent(new Event('submit'));
+                                document.getElementById('tmv-verify-form').dispatchEvent(new Event('submit', {bubbles: true}));
                             }, 500);
                         }
                     });

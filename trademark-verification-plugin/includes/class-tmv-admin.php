@@ -184,11 +184,14 @@ class TMV_Admin {
         $verify_code = get_post_meta($post->ID, 'tmv_verify_code', true);
         $custom_qr_url = get_post_meta($post->ID, 'tmv_custom_qr_url', true);
         $verify_base = get_option('tmv_verify_base_url', home_url('/verify/'));
+        $qr_size = intval(get_option('tmv_qr_size', 200));
         
         if (empty($verify_code)) {
             $verify_code = self::generate_verify_code();
             update_post_meta($post->ID, 'tmv_verify_code', $verify_code);
         }
+        
+        $verify_url = !empty($custom_qr_url) ? $custom_qr_url : rtrim($verify_base, '/') . '/?code=' . $verify_code;
         ?>
         <div class="tmv-qr-box">
             <p><strong>Verify Code:</strong></p>
@@ -200,8 +203,26 @@ class TMV_Admin {
             <p class="description">Leave blank to use default verify URL</p>
             
             <p><strong>Full Verify Link:</strong></p>
-            <code style="word-break:break-all;font-size:11px;"><?php echo esc_html($custom_qr_url ?: $verify_base . '?code=' . $verify_code); ?></code>
+            <code style="word-break:break-all;font-size:11px;"><?php echo esc_html($verify_url); ?></code>
+            
+            <div id="tmv-qr-display" style="margin-top:15px;text-align:center;"></div>
         </div>
+        <script>
+        (function() {
+            var verifyUrl = <?php echo wp_json_encode($verify_url); ?>;
+            var qrSize = <?php echo intval($qr_size); ?>;
+            document.addEventListener('DOMContentLoaded', function() {
+                var container = document.getElementById('tmv-qr-display');
+                if (container && typeof QRCode !== 'undefined') {
+                    new QRCode(container, {
+                        text: verifyUrl,
+                        width: qrSize,
+                        height: qrSize
+                    });
+                }
+            });
+        })();
+        </script>
         <?php
     }
     
