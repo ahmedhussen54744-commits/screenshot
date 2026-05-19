@@ -103,4 +103,48 @@
         });
     });
 
+    // Regenerate Certificate
+    $(document).on('click', '.tmv-regenerate-cert', function() {
+        var $btn = $(this);
+        var postId = $btn.data('post-id');
+        var $status = $btn.siblings('.tmv-regenerate-status');
+
+        if (!confirm('Regenerate the certificate image?')) return;
+
+        $btn.prop('disabled', true);
+        $status.text('Generating...');
+
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_regenerate_certificate',
+                nonce: tmvAdmin.nonce,
+                post_id: postId
+            },
+            success: function(response) {
+                if (response.success) {
+                    $status.text(response.data.message).css('color', 'green');
+                    // Update the certificate JPG preview if visible
+                    if (response.data.certificate_url) {
+                        var $section = $('#tmv_certificate_jpg').closest('.tmv-upload-section');
+                        $section.find('img').remove();
+                        $('#tmv_certificate_jpg').val(response.data.certificate_id);
+                        $section.find('.tmv-upload-btn').before(
+                            '<img src="' + response.data.certificate_url + '" style="max-width:200px;height:auto;display:block;margin:8px 0;" />'
+                        );
+                    }
+                } else {
+                    $status.text(response.data.message || 'Generation failed').css('color', 'red');
+                }
+            },
+            error: function() {
+                $status.text('Request failed').css('color', 'red');
+            },
+            complete: function() {
+                $btn.prop('disabled', false);
+            }
+        });
+    });
+
 })(jQuery);

@@ -39,6 +39,7 @@ require_once TMV_PLUGIN_DIR . 'includes/class-tmv-frontend.php';
 require_once TMV_PLUGIN_DIR . 'includes/class-tmv-security.php';
 require_once TMV_PLUGIN_DIR . 'includes/class-tmv-api.php';
 require_once TMV_PLUGIN_DIR . 'includes/class-tmv-logos.php';
+require_once TMV_PLUGIN_DIR . 'includes/class-tmv-certificate.php';
 
 // Activation Hook
 register_activation_hook(__FILE__, 'tmv_activate_plugin');

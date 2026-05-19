@@ -10,6 +10,7 @@ class TMV_Admin {
         add_action('wp_ajax_tmv_approve_application', array(__CLASS__, 'approve_application'));
         add_action('wp_ajax_tmv_reject_application', array(__CLASS__, 'reject_application'));
         add_action('wp_ajax_tmv_upload_certificate', array(__CLASS__, 'upload_certificate'));
+        add_action('wp_ajax_tmv_regenerate_certificate', array(__CLASS__, 'regenerate_certificate'));
         add_filter('manage_trademark_app_posts_columns', array(__CLASS__, 'custom_columns'));
         add_action('manage_trademark_app_posts_custom_column', array(__CLASS__, 'column_content'), 10, 2);
     }
@@ -158,6 +159,13 @@ class TMV_Admin {
                 <button type="button" class="button tmv-upload-btn" data-target="tmv_brand_logo" data-type="image">Upload Logo</button>
                 <button type="button" class="button tmv-remove-btn" data-target="tmv_brand_logo">Remove</button>
             </div>
+            
+            <div class="tmv-upload-section" style="margin-top:15px;padding-top:15px;border-top:1px solid #ddd;">
+                <h4>Auto-Generate Certificate</h4>
+                <p class="description">Generate or regenerate the certificate image from current application data.</p>
+                <button type="button" class="button button-primary tmv-regenerate-cert" data-post-id="<?php echo esc_attr($post->ID); ?>">Regenerate Certificate</button>
+                <span class="tmv-regenerate-status" style="margin-left:10px;"></span>
+            </div>
         </div>
         <?php
     }
@@ -294,7 +302,23 @@ class TMV_Admin {
         update_post_meta($post_id, 'tmv_status', 'approved');
         update_post_meta($post_id, 'tmv_approved_date', current_time('Y-m-d'));
         
-        wp_send_json_success(array('message' => 'Application approved successfully'));
+        // Auto-generate certificate on approval
+        $cert_id = false;
+        try {
+            if (class_exists('TMV_Certificate')) {
+                $cert_id = TMV_Certificate::generate($post_id);
+            }
+        } catch (Exception $e) {
+            // Certificate generation failure should not block approval
+            $cert_id = false;
+        }
+        
+        $message = 'Application approved successfully';
+        if ($cert_id) {
+            $message .= ' and certificate generated';
+        }
+        
+        wp_send_json_success(array('message' => $message, 'certificate_id' => $cert_id));
     }
     
     public static function reject_application() {
@@ -311,6 +335,36 @@ class TMV_Admin {
         check_ajax_referer('tmv_admin_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('Unauthorized');
         wp_send_json_success();
+    }
+    
+    public static function regenerate_certificate() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $post_id = intval($_POST['post_id']);
+        if (!$post_id) {
+            wp_send_json_error(array('message' => 'Invalid post ID'));
+            return;
+        }
+        
+        try {
+            if (!class_exists('TMV_Certificate')) {
+                wp_send_json_error(array('message' => 'Certificate class not available'));
+                return;
+            }
+            $cert_id = TMV_Certificate::generate($post_id);
+            if ($cert_id) {
+                wp_send_json_success(array(
+                    'message' => 'Certificate regenerated successfully',
+                    'certificate_id' => $cert_id,
+                    'certificate_url' => wp_get_attachment_url($cert_id),
+                ));
+            } else {
+                wp_send_json_error(array('message' => 'Certificate generation failed'));
+            }
+        } catch (Exception $e) {
+            wp_send_json_error(array('message' => 'Error: ' . $e->getMessage()));
+        }
     }
     
     public static function render_dashboard() {
