@@ -41,6 +41,7 @@ require_once TMV_PLUGIN_DIR . 'includes/class-tmv-api.php';
 require_once TMV_PLUGIN_DIR . 'includes/class-tmv-logos.php';
 require_once TMV_PLUGIN_DIR . 'includes/class-tmv-certificate.php';
 require_once TMV_PLUGIN_DIR . 'includes/class-tmv-auth.php';
+require_once TMV_PLUGIN_DIR . 'includes/class-tmv-admin-extended.php';
 
 // Activation Hook
 register_activation_hook(__FILE__, 'tmv_activate_plugin');
@@ -59,6 +60,90 @@ function tmv_activate_plugin() {
     );
     
     foreach ($defaults as $key => $value) {
+        if (get_option($key) === false) {
+            add_option($key, $value);
+        }
+    }
+
+    // Extended settings defaults
+    $extended_defaults = array(
+        'tmv_site_mode' => 'live',
+        'tmv_registration_open' => '1',
+        'tmv_default_user_role' => 'subscriber',
+        'tmv_max_upload_size' => '10',
+        'tmv_allowed_file_types' => 'jpg,jpeg,png,pdf',
+        'tmv_auto_approve' => '0',
+        'tmv_certificate_validity_days' => '365',
+        'tmv_watermark_text' => 'DPDT Registry',
+        'tmv_watermark_opacity' => '30',
+        'tmv_admin_footer_text' => '',
+        'tmv_timezone' => 'Asia/Dhaka',
+        'tmv_date_format' => 'Y-m-d',
+        'tmv_application_prefix' => 'TM-',
+        'tmv_require_email_verification' => '0',
+        'tmv_primary_color' => '#1d4ed8',
+        'tmv_accent_color' => '#10b981',
+        'tmv_dark_mode' => '0',
+        'tmv_custom_css' => '',
+        'tmv_header_style' => 'solid',
+        'tmv_font_family' => 'Inter',
+        'tmv_animation_enabled' => '1',
+        'tmv_logo_max_width' => '200',
+        'tmv_card_border_radius' => '12',
+        'tmv_shadow_intensity' => 'medium',
+        'tmv_notify_new_application' => '1',
+        'tmv_notify_approval' => '1',
+        'tmv_notify_rejection' => '1',
+        'tmv_admin_email_recipients' => '',
+        'tmv_email_digest_frequency' => 'none',
+        'tmv_slack_webhook_url' => '',
+        'tmv_notification_sound' => '1',
+        'tmv_sms_notifications' => '0',
+        'tmv_push_notifications' => '0',
+        'tmv_auto_reminder_days' => '7',
+        'tmv_report_recipients' => '',
+        'tmv_scheduled_reports' => '0',
+        'tmv_auto_assign_reviewer' => '0',
+        'tmv_default_reviewer' => '',
+        'tmv_escalation_days' => '14',
+        'tmv_sla_warning_days' => '7',
+        'tmv_auto_archive_days' => '365',
+        'tmv_reminder_frequency_days' => '3',
+        'tmv_duplicate_detection' => '0',
+        'tmv_auto_merge_duplicates' => '0',
+        'tmv_priority_levels' => 'low,medium,high,urgent',
+        'tmv_required_fields' => 'tm_number,owner,class',
+        'tmv_meta_title_template' => '{site_name} - {page_title}',
+        'tmv_meta_description_template' => 'Official Trademark Verification System',
+        'tmv_og_image' => '',
+        'tmv_generate_sitemap' => '0',
+        'tmv_structured_data' => '0',
+        'tmv_canonical_url_base' => '',
+        'tmv_robots_meta' => 'index',
+        'tmv_social_preview_title' => '',
+        'tmv_social_preview_description' => '',
+        'tmv_analytics_tracking_code' => '',
+        'tmv_copyright_disable_rightclick' => '1',
+        'tmv_copyright_disable_selection' => '0',
+        'tmv_copyright_disable_print' => '0',
+        'tmv_copyright_disable_devtools' => '1',
+        'tmv_copyright_watermark_text' => '',
+        'tmv_copyright_watermark_position' => 'center',
+        'tmv_copyright_hotlink_protection' => '0',
+        'tmv_copyright_image_overlay' => '0',
+        'tmv_copyright_dmca_notice' => '',
+        'tmv_copyright_footer_text' => '',
+        'tmv_copyright_disable_drag' => '1',
+        'tmv_copyright_disable_screenshot' => '0',
+        'tmv_scheduled_backup' => '0',
+        'tmv_backup_frequency' => 'weekly',
+        'tmv_last_backup_date' => 'Never',
+        'tmv_csp_enabled' => '0',
+        'tmv_csp_policy' => '',
+        'tmv_single_session' => '0',
+    );
+
+    foreach ($extended_defaults as $key => $value) {
         if (get_option($key) === false) {
             add_option($key, $value);
         }
@@ -252,6 +337,7 @@ add_action('plugins_loaded', function() {
     TMV_Security::init();
     TMV_API::init();
     TMV_Auth::init();
+    TMV_Admin_Extended::init();
 });
 
 // Enqueue Scripts & Styles

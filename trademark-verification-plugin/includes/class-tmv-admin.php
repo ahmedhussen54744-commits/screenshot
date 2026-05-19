@@ -404,6 +404,14 @@ class TMV_Admin {
                 <button class="tmv-tab-btn" data-tab="content">Content</button>
                 <button class="tmv-tab-btn" data-tab="verification">Verification</button>
                 <button class="tmv-tab-btn" data-tab="maintenance">Maintenance</button>
+                <button class="tmv-tab-btn" data-tab="settings-extended">Settings Extended</button>
+                <button class="tmv-tab-btn" data-tab="appearance">Appearance</button>
+                <button class="tmv-tab-btn" data-tab="notifications">Notifications</button>
+                <button class="tmv-tab-btn" data-tab="reports">Reports</button>
+                <button class="tmv-tab-btn" data-tab="workflow">Workflow</button>
+                <button class="tmv-tab-btn" data-tab="seo">SEO</button>
+                <button class="tmv-tab-btn" data-tab="copyright">Copyright</button>
+                <button class="tmv-tab-btn" data-tab="backup">Backup</button>
             </div>
             
             <div class="tmv-tab-content active" id="tmv-tab-overview">
@@ -435,6 +443,30 @@ class TMV_Admin {
             </div>
             <div class="tmv-tab-content" id="tmv-tab-maintenance">
                 <?php self::render_tab_maintenance(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-settings-extended">
+                <?php TMV_Admin_Extended::render_tab_settings_extended(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-appearance">
+                <?php TMV_Admin_Extended::render_tab_appearance(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-notifications">
+                <?php TMV_Admin_Extended::render_tab_notifications(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-reports">
+                <?php TMV_Admin_Extended::render_tab_reports(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-workflow">
+                <?php TMV_Admin_Extended::render_tab_workflow(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-seo">
+                <?php TMV_Admin_Extended::render_tab_seo(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-copyright">
+                <?php TMV_Admin_Extended::render_tab_copyright(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-backup">
+                <?php TMV_Admin_Extended::render_tab_backup(); ?>
             </div>
         </div>
         <?php
