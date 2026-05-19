@@ -1064,7 +1064,10 @@
             },
             success: function(response) {
                 if (response.success) {
-                    $('#tmv-tags-list').append('<span class="tmv-tag-badge">' + tagName + ' <button class="tmv-remove-tag" data-tag="' + tagName + '">&times;</button></span>');
+                    var $badge = $('<span>').addClass('tmv-tag-badge').text(tagName + ' ');
+                    var $removeBtn = $('<button>').addClass('tmv-remove-tag').attr('data-tag', tagName).html('&times;');
+                    $badge.append($removeBtn);
+                    $('#tmv-tags-list').append($badge);
                     $('#tmv-new-tag-input').val('');
                 } else {
                     alert(response.data.message || 'Failed to add tag.');

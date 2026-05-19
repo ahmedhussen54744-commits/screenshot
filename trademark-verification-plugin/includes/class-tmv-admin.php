@@ -1795,7 +1795,7 @@ class TMV_Admin {
                 </div>
                 <div class="tmv-field-inline">
                     <label>Secret Key:</label>
-                    <input type="text" id="tmv-captcha-secret-key" value="<?php echo esc_attr(get_option('tmv_captcha_secret_key', '')); ?>" style="width:400px;" />
+                    <input type="password" id="tmv-captcha-secret-key" value="<?php echo esc_attr(get_option('tmv_captcha_secret_key', '')); ?>" style="width:400px;" />
                 </div>
             </div>
         </div>
@@ -2669,7 +2669,7 @@ class TMV_Admin {
                 </div>
                 <div class="tmv-field-inline">
                     <label>VAPID Private Key:</label>
-                    <input type="text" id="tmv-vapid-private" value="<?php echo esc_attr($notification_settings['vapid_private'] ?? ''); ?>" style="width:400px;" />
+                    <input type="password" id="tmv-vapid-private" value="<?php echo esc_attr($notification_settings['vapid_private'] ?? ''); ?>" style="width:400px;" />
                 </div>
             </div>
         </div>
@@ -2706,7 +2706,7 @@ class TMV_Admin {
                 </div>
                 <div class="tmv-field-inline">
                     <label>API Key:</label>
-                    <input type="text" id="tmv-sms-api-key" value="<?php echo esc_attr($notification_settings['sms_api_key'] ?? ''); ?>" style="width:400px;" />
+                    <input type="password" id="tmv-sms-api-key" value="<?php echo esc_attr($notification_settings['sms_api_key'] ?? ''); ?>" style="width:400px;" />
                 </div>
                 <div class="tmv-field-inline">
                     <label>Sender ID:</label>
@@ -3291,9 +3291,19 @@ class TMV_Admin {
             "SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE 'tmv_%'"
         );
         
+        $sensitive_patterns = array('secret', 'private', 'api_key', 'password');
         $export_data = array();
         foreach ($tmv_options as $opt) {
-            $export_data[$opt->option_name] = maybe_unserialize($opt->option_value);
+            $is_sensitive = false;
+            foreach ($sensitive_patterns as $pattern) {
+                if (stripos($opt->option_name, $pattern) !== false) {
+                    $is_sensitive = true;
+                    break;
+                }
+            }
+            if (!$is_sensitive) {
+                $export_data[$opt->option_name] = maybe_unserialize($opt->option_value);
+            }
         }
         
         wp_send_json_success(array('data' => $export_data, 'message' => 'Settings exported'));
@@ -3314,7 +3324,15 @@ class TMV_Admin {
         $imported = 0;
         foreach ($settings as $key => $value) {
             if (strpos($key, 'tmv_') === 0) {
-                update_option(sanitize_text_field($key), $value);
+                $sanitized_key = sanitize_text_field($key);
+                if (is_array($value)) {
+                    $value = array_map('sanitize_text_field', $value);
+                } elseif (is_int($value)) {
+                    $value = intval($value);
+                } else {
+                    $value = sanitize_text_field((string) $value);
+                }
+                update_option($sanitized_key, $value);
                 $imported++;
             }
         }
@@ -3436,22 +3454,40 @@ class TMV_Admin {
         check_ajax_referer('tmv_admin_nonce', 'nonce');
         if (!current_user_can('manage_options')) wp_die('Unauthorized');
         
-        $csv_data = sanitize_textarea_field($_POST['csv_data'] ?? '');
+        if (empty($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
+            wp_send_json_error(array('message' => 'No CSV file uploaded or upload error'));
+            return;
+        }
         
+        $file = $_FILES['csv_file'];
+        $allowed_mimes = array('text/csv', 'text/plain', 'application/csv', 'application/vnd.ms-excel');
+        if (!in_array($file['type'], $allowed_mimes, true)) {
+            wp_send_json_error(array('message' => 'Invalid file type. Please upload a CSV file'));
+            return;
+        }
+        
+        $csv_data = file_get_contents($file['tmp_name']);
         if (empty($csv_data)) {
-            wp_send_json_error(array('message' => 'No CSV data provided'));
+            wp_send_json_error(array('message' => 'CSV file is empty'));
             return;
         }
         
         $lines = explode("\n", $csv_data);
         $imported = 0;
+        $allowed_roles = array('subscriber', 'editor', 'author', 'contributor');
         
         foreach ($lines as $line) {
+            $line = trim($line);
+            if (empty($line)) continue;
             $fields = str_getcsv($line);
             if (count($fields) >= 2) {
                 $username = sanitize_user($fields[0]);
                 $email = sanitize_email($fields[1]);
                 $role = isset($fields[2]) ? sanitize_text_field($fields[2]) : 'subscriber';
+                
+                if (!in_array($role, $allowed_roles, true)) {
+                    $role = 'subscriber';
+                }
                 
                 if (!empty($username) && !empty($email) && !username_exists($username) && !email_exists($email)) {
                     $password = wp_generate_password();
@@ -3497,6 +3533,11 @@ class TMV_Admin {
         
         $email = sanitize_email($_POST['email'] ?? '');
         $role = sanitize_text_field($_POST['role'] ?? 'subscriber');
+        
+        $allowed_roles = array('subscriber', 'editor', 'author', 'contributor');
+        if (!in_array($role, $allowed_roles, true)) {
+            $role = 'subscriber';
+        }
         
         if (empty($email) || !is_email($email)) {
             wp_send_json_error(array('message' => 'Valid email is required'));
@@ -3544,15 +3585,24 @@ class TMV_Admin {
         }
         
         $users = get_users($args);
+        $total_users = count($users);
+        $batch_limit = 50;
+        $users_batch = array_slice($users, 0, $batch_limit);
         $sent = 0;
         
-        foreach ($users as $user) {
+        foreach ($users_batch as $user) {
             if (wp_mail($user->user_email, $subject, $message)) {
                 $sent++;
             }
         }
         
-        wp_send_json_success(array('message' => 'Email sent to ' . $sent . ' users'));
+        $remaining = $total_users - $batch_limit;
+        $msg = 'Email sent to ' . $sent . ' users';
+        if ($remaining > 0) {
+            $msg .= '. ' . $remaining . ' remaining users were not emailed. Please send again for the next batch.';
+        }
+        
+        wp_send_json_success(array('message' => $msg));
     }
     
     public static function ajax_save_cert_watermark() {
