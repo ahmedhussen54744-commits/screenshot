@@ -321,11 +321,27 @@ class TMV_Frontend {
         
         $query = new WP_Query($args);
         
+        // Log verification attempt
+        $log = get_option('tmv_verification_log', array());
+        $log[] = array(
+            'code' => $search,
+            'result' => $query->have_posts() ? 'found' : 'not_found',
+            'ip' => $_SERVER['REMOTE_ADDR'],
+            'time' => current_time('mysql')
+        );
+        if (count($log) > 500) $log = array_slice($log, -500);
+        update_option('tmv_verification_log', $log);
+        
         if (!$query->have_posts()) {
             wp_send_json_error(array('message' => 'No verified trademark found with this number.'));
         }
         
         $post = $query->posts[0];
+        
+        // Increment verification count on the found post
+        $verify_count = intval(get_post_meta($post->ID, 'tmv_verify_count', true));
+        update_post_meta($post->ID, 'tmv_verify_count', $verify_count + 1);
+        
         $meta = get_post_meta($post->ID);
         
         $logo_url = '';
