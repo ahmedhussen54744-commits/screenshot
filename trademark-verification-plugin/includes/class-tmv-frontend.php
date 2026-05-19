@@ -232,14 +232,25 @@ class TMV_Frontend {
         }
         
         // Create post
-        $post_id = wp_insert_post(array(
+        $post_args = array(
             'post_type' => 'trademark_app',
             'post_title' => $tm_number . ' - ' . $owner,
             'post_status' => 'publish',
-        ));
+        );
+
+        if (is_user_logged_in()) {
+            $post_args['post_author'] = get_current_user_id();
+        }
+
+        $post_id = wp_insert_post($post_args);
         
         if (is_wp_error($post_id)) {
             wp_send_json_error(array('message' => 'Failed to submit application.'));
+        }
+
+        // Associate user with application
+        if (is_user_logged_in()) {
+            update_post_meta($post_id, 'tmv_applicant_user_id', get_current_user_id());
         }
         
         // Save meta

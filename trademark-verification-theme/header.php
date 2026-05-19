@@ -29,6 +29,13 @@
             <a href="<?php echo home_url('/'); ?>" <?php if (is_front_page()) echo 'class="active"'; ?>>Home</a>
             <a href="<?php echo home_url('/verify/'); ?>" <?php if (is_page('verify')) echo 'class="active"'; ?>>Verify</a>
             <a href="<?php echo home_url('/apply/'); ?>" <?php if (is_page('apply')) echo 'class="active"'; ?>>Apply</a>
+            <?php if (is_user_logged_in()) : ?>
+                <a href="<?php echo home_url('/dashboard/'); ?>" <?php if (is_page('dashboard')) echo 'class="active"'; ?>>Dashboard</a>
+                <a href="<?php echo wp_logout_url(home_url()); ?>">Logout</a>
+            <?php else : ?>
+                <a href="<?php echo home_url('/login/'); ?>" <?php if (is_page('login')) echo 'class="active"'; ?>>Login</a>
+                <a href="<?php echo home_url('/register/'); ?>" <?php if (is_page('register')) echo 'class="active"'; ?>>Register</a>
+            <?php endif; ?>
         </nav>
     </div>
 </header>

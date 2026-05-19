@@ -235,4 +235,165 @@
         $(this).css('transform', 'perspective(1000px) rotateX(0deg) rotateY(0deg)');
     });
 
+    // ===== AUTH FORM HANDLERS =====
+
+    // Login Form Handler
+    $(document).on('submit', '#tmv-login-form', function(e) {
+        e.preventDefault();
+
+        var $form = $(this);
+        var $btn = $form.find('.tmv-btn-primary');
+        var $btnText = $btn.find('.tmv-btn-text');
+        var $btnLoader = $btn.find('.tmv-btn-loader');
+        var $response = $('#tmv-login-response');
+
+        $btn.prop('disabled', true);
+        $btnText.hide();
+        $btnLoader.show();
+        $response.hide();
+
+        $.ajax({
+            url: tmvAjax.url,
+            type: 'POST',
+            data: $form.serialize(),
+            success: function(response) {
+                if (response.success) {
+                    $response.removeClass('tmv-error').addClass('tmv-success')
+                        .html('<strong>&#10003;</strong> ' + response.data.message)
+                        .fadeIn();
+                    if (response.data.redirect) {
+                        setTimeout(function() {
+                            window.location.href = response.data.redirect;
+                        }, 1000);
+                    }
+                } else {
+                    $response.removeClass('tmv-success').addClass('tmv-error')
+                        .html('<strong>&#10007;</strong> ' + response.data.message)
+                        .fadeIn();
+                }
+            },
+            error: function() {
+                $response.removeClass('tmv-success').addClass('tmv-error')
+                    .html('<strong>&#10007;</strong> Server error. Please try again.')
+                    .fadeIn();
+            },
+            complete: function() {
+                $btn.prop('disabled', false);
+                $btnText.show();
+                $btnLoader.hide();
+            }
+        });
+    });
+
+    // Register Form Handler
+    $(document).on('submit', '#tmv-register-form', function(e) {
+        e.preventDefault();
+
+        var $form = $(this);
+        var $btn = $form.find('.tmv-btn-primary');
+        var $btnText = $btn.find('.tmv-btn-text');
+        var $btnLoader = $btn.find('.tmv-btn-loader');
+        var $response = $('#tmv-register-response');
+
+        // Client-side password validation
+        var password = $form.find('[name="tmv_password"]').val();
+        var confirm = $form.find('[name="tmv_password_confirm"]').val();
+
+        if (password !== confirm) {
+            $response.removeClass('tmv-success').addClass('tmv-error')
+                .html('<strong>&#10007;</strong> Passwords do not match.')
+                .fadeIn();
+            return;
+        }
+
+        if (password.length < 6) {
+            $response.removeClass('tmv-success').addClass('tmv-error')
+                .html('<strong>&#10007;</strong> Password must be at least 6 characters.')
+                .fadeIn();
+            return;
+        }
+
+        $btn.prop('disabled', true);
+        $btnText.hide();
+        $btnLoader.show();
+        $response.hide();
+
+        $.ajax({
+            url: tmvAjax.url,
+            type: 'POST',
+            data: $form.serialize(),
+            success: function(response) {
+                if (response.success) {
+                    $response.removeClass('tmv-error').addClass('tmv-success')
+                        .html('<strong>&#10003;</strong> ' + response.data.message)
+                        .fadeIn();
+                    $form[0].reset();
+                    if (response.data.redirect) {
+                        setTimeout(function() {
+                            window.location.href = response.data.redirect;
+                        }, 2000);
+                    }
+                } else {
+                    $response.removeClass('tmv-success').addClass('tmv-error')
+                        .html('<strong>&#10007;</strong> ' + response.data.message)
+                        .fadeIn();
+                }
+            },
+            error: function() {
+                $response.removeClass('tmv-success').addClass('tmv-error')
+                    .html('<strong>&#10007;</strong> Server error. Please try again.')
+                    .fadeIn();
+            },
+            complete: function() {
+                $btn.prop('disabled', false);
+                $btnText.show();
+                $btnLoader.hide();
+            }
+        });
+    });
+
+    // Password Reset Form Handler
+    $(document).on('submit', '#tmv-reset-form', function(e) {
+        e.preventDefault();
+
+        var $form = $(this);
+        var $btn = $form.find('.tmv-btn-primary');
+        var $btnText = $btn.find('.tmv-btn-text');
+        var $btnLoader = $btn.find('.tmv-btn-loader');
+        var $response = $('#tmv-reset-response');
+
+        $btn.prop('disabled', true);
+        $btnText.hide();
+        $btnLoader.show();
+        $response.hide();
+
+        $.ajax({
+            url: tmvAjax.url,
+            type: 'POST',
+            data: $form.serialize(),
+            success: function(response) {
+                if (response.success) {
+                    $response.removeClass('tmv-error').addClass('tmv-success')
+                        .html('<strong>&#10003;</strong> ' + response.data.message)
+                        .fadeIn();
+                    $form[0].reset();
+                } else {
+                    $response.removeClass('tmv-success').addClass('tmv-error')
+                        .html('<strong>&#10007;</strong> ' + response.data.message)
+                        .fadeIn();
+                }
+            },
+            error: function() {
+                $response.removeClass('tmv-success').addClass('tmv-error')
+                    .html('<strong>&#10007;</strong> Server error. Please try again.')
+                    .fadeIn();
+            },
+            complete: function() {
+                $btn.prop('disabled', false);
+                $btnText.show();
+                $btnLoader.hide();
+            }
+        });
+    });
+
 })(jQuery);
