@@ -23,21 +23,39 @@
             </div>
         </a>
         
-        <button class="tmv-nav-toggle" aria-label="Menu" onclick="document.querySelector('.tmv-nav').classList.toggle('active')">&#9776;</button>
+        <button class="tmv-nav-toggle" aria-label="Toggle Navigation">
+            <span class="tmv-nav-toggle-bar"></span>
+            <span class="tmv-nav-toggle-bar"></span>
+            <span class="tmv-nav-toggle-bar"></span>
+        </button>
         
         <nav class="tmv-nav">
+            <div class="tmv-nav-close-btn">&times;</div>
             <a href="<?php echo home_url('/'); ?>" <?php if (is_front_page()) echo 'class="active"'; ?>>Home</a>
-            <a href="<?php echo home_url('/verify/'); ?>" <?php if (is_page('verify')) echo 'class="active"'; ?>>Verify</a>
-            <a href="<?php echo home_url('/apply/'); ?>" <?php if (is_page('apply')) echo 'class="active"'; ?>>Apply</a>
-            <a href="<?php echo home_url('/blog/'); ?>" <?php if (is_home() || is_single() || is_archive()) echo 'class="active"'; ?>>News</a>
+            <a href="<?php echo home_url('/verify/'); ?>" <?php if (is_page('verify')) echo 'class="active"'; ?>>Verify Certificate</a>
+            <a href="<?php echo home_url('/apply/'); ?>" <?php if (is_page('apply')) echo 'class="active"'; ?>>Apply for Trademark</a>
+            <a href="<?php echo home_url('/blog/'); ?>" <?php if (is_home() || is_single() || is_archive()) echo 'class="active"'; ?>>News/Blog</a>
+            
+            <!-- More dropdown for secondary items -->
+            <div class="tmv-nav-dropdown">
+                <a href="#" class="tmv-nav-dropdown-toggle">More <span class="tmv-dropdown-arrow">&#9662;</span></a>
+                <div class="tmv-nav-dropdown-menu">
+                    <a href="<?php echo home_url('/services/'); ?>" <?php if (is_page('services')) echo 'class="active"'; ?>>Services</a>
+                    <a href="<?php echo home_url('/about/'); ?>" <?php if (is_page('about')) echo 'class="active"'; ?>>About Us</a>
+                    <a href="<?php echo home_url('/contact/'); ?>" <?php if (is_page('contact')) echo 'class="active"'; ?>>Contact</a>
+                    <a href="<?php echo home_url('/faq/'); ?>" <?php if (is_page('faq')) echo 'class="active"'; ?>>FAQ</a>
+                </div>
+            </div>
+            
             <?php if (is_user_logged_in()) : ?>
-                <a href="<?php echo home_url('/dashboard/'); ?>" <?php if (is_page('dashboard')) echo 'class="active"'; ?>>Dashboard</a>
-                <a href="<?php echo wp_logout_url(home_url()); ?>">Logout</a>
+                <a href="<?php echo home_url('/dashboard/'); ?>" class="tmv-nav-btn tmv-nav-btn-dashboard <?php if (is_page('dashboard')) echo 'active'; ?>">Dashboard</a>
+                <a href="<?php echo wp_logout_url(home_url()); ?>" class="tmv-nav-btn tmv-nav-btn-logout">Logout</a>
             <?php else : ?>
-                <a href="<?php echo home_url('/login/'); ?>" <?php if (is_page('login')) echo 'class="active"'; ?>>Login</a>
-                <a href="<?php echo home_url('/register/'); ?>" <?php if (is_page('register')) echo 'class="active"'; ?>>Register</a>
+                <a href="<?php echo home_url('/login/'); ?>" class="tmv-nav-btn tmv-nav-btn-login <?php if (is_page('login')) echo 'active'; ?>">Login</a>
+                <a href="<?php echo home_url('/register/'); ?>" class="tmv-nav-btn tmv-nav-btn-register <?php if (is_page('register')) echo 'active'; ?>">Register</a>
             <?php endif; ?>
         </nav>
+        <div class="tmv-nav-overlay"></div>
     </div>
 </header>
 

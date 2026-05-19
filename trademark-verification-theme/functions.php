@@ -23,12 +23,25 @@ function tmv_theme_setup() {
     ));
     add_theme_support('html5', array('search-form', 'comment-form', 'comment-list', 'gallery', 'caption'));
     add_theme_support('custom-background');
+    add_theme_support('custom-header');
     add_theme_support('editor-styles');
     
     register_nav_menus(array(
         'primary' => 'Primary Navigation',
         'footer' => 'Footer Navigation',
+        'mobile' => 'Mobile Navigation',
     ));
+}
+
+// Reading time helper function
+function tmv_reading_time($post_id = null) {
+    if (!$post_id) {
+        $post_id = get_the_ID();
+    }
+    $content = get_post_field('post_content', $post_id);
+    $word_count = str_word_count(strip_tags($content));
+    $reading_time = max(1, ceil($word_count / 200));
+    return $reading_time;
 }
 
 // Allow video MIME types for upload
