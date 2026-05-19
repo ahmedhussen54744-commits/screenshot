@@ -158,7 +158,7 @@ class TMV_Frontend {
                         <input type="hidden" name="action" value="tmv_verify_trademark" />
                         <input type="hidden" name="tmv_nonce" value="<?php echo wp_create_nonce('tmv_verify_nonce'); ?>" />
                         <div class="tmv-search-wrapper">
-                            <input type="text" name="tmv_search_code" id="tmv-search-input" class="tmv-search-input" placeholder="Enter TM Number or Verification Code" required maxlength="20" autocomplete="off" />
+                            <input type="text" name="tmv_search_code" id="tmv-search-input" class="tmv-search-input" placeholder="Enter TM Number or Verification Code" required maxlength="20" autocomplete="off" value="<?php echo esc_attr(isset($_GET['code']) ? sanitize_text_field($_GET['code']) : ''); ?>" />
                             <button type="submit" class="tmv-search-btn tmv-3d-btn">
                                 <span>&#128269; Search</span>
                             </button>
@@ -286,24 +286,27 @@ class TMV_Frontend {
             'posts_per_page' => 1,
             'post_status' => 'any',
             'meta_query' => array(
-                'relation' => 'AND',
-                array(
-                    'relation' => 'OR',
-                    array('key' => 'tmv_verify_code', 'value' => $search, 'compare' => '='),
-                    array('key' => 'tmv_tm_number', 'value' => $search, 'compare' => '='),
-                ),
-                array('key' => 'tmv_status', 'value' => 'approved', 'compare' => '='),
+                'relation' => 'OR',
+                array('key' => 'tmv_verify_code', 'value' => $search, 'compare' => '='),
+                array('key' => 'tmv_tm_number', 'value' => $search, 'compare' => '='),
             ),
         );
         
         $query = new WP_Query($args);
         
         if (!$query->have_posts()) {
-            wp_send_json_error(array('message' => 'No verified trademark found with this number.'));
+            wp_send_json_error(array('message' => 'No trademark found with this number.'));
         }
         
         $post = $query->posts[0];
         $meta = get_post_meta($post->ID);
+        
+        // Check status
+        $status = $meta['tmv_status'][0] ?? 'pending';
+        
+        if ($status !== 'approved') {
+            wp_send_json_error(array('message' => 'This trademark application is currently "' . ucfirst($status) . '". Only approved trademarks can be verified.'));
+        }
         
         $logo_url = '';
         $logo_id = $meta['tmv_brand_logo'][0] ?? '';

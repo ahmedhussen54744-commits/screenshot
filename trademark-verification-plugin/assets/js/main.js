@@ -5,6 +5,19 @@
 (function($) {
     'use strict';
 
+    // Auto-verify if URL has ?code= parameter
+    $(document).ready(function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var code = urlParams.get('code');
+        if (code && $('#tmv-search-input').length) {
+            $('#tmv-search-input').val(code);
+            // Auto-submit the verify form
+            setTimeout(function() {
+                $('#tmv-verify-form').trigger('submit');
+            }, 500);
+        }
+    });
+
     // Application Form Handler
     $(document).on('submit', '#tmv-application-form', function(e) {
         e.preventDefault();
