@@ -343,7 +343,7 @@ class TMV_Security {
         if (count($log) > 100) {
             $log = array_slice($log, -100);
         }
-        update_option('tmv_failed_logins', $log);
+        update_option('tmv_failed_logins', $log, false);
         
         // Block IP after 5 failed attempts in last hour
         $ip_attempts = array_filter($log, function($entry) use ($ip) {
