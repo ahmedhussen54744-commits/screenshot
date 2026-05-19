@@ -458,6 +458,11 @@ class TMV_Auth {
 
         // Rate limiting: 10 attempts per hour per IP
         $ip = $_SERVER['REMOTE_ADDR'];
+
+        // Check if IP is blocked by security module
+        if (get_transient('tmv_blocked_' . md5($ip))) {
+            wp_send_json_error(array('message' => 'Too many failed attempts. Please try again later.'));
+        }
         $transient_key = 'tmv_rate_login_' . md5($ip);
         $attempts = get_transient($transient_key);
         if ($attempts && $attempts >= 10) {
@@ -538,7 +543,12 @@ class TMV_Auth {
         }
 
         if (email_exists($email)) {
-            wp_send_json_error(array('message' => 'An account with this email already exists.'));
+            // Return generic success to prevent email enumeration
+            wp_send_json_success(array(
+                'message' => 'Registration successful! Please check your email for confirmation.',
+                'redirect' => home_url('/login/'),
+            ));
+            return;
         }
 
         $username = sanitize_user(strtolower($first_name . '.' . $last_name));
@@ -569,7 +579,7 @@ class TMV_Auth {
         $user->set_role('subscriber');
 
         wp_send_json_success(array(
-            'message' => 'Registration successful! You can now login.',
+            'message' => 'Registration successful! Please check your email for confirmation.',
             'redirect' => home_url('/login/'),
         ));
     }

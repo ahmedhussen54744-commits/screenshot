@@ -1503,6 +1503,10 @@ class TMV_Admin {
         $list = get_option($option_key, array());
         
         if ($action_type === 'add' && !empty($ip)) {
+            if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+                wp_send_json_error(array('message' => 'Invalid IP address format.'));
+                return;
+            }
             if (!in_array($ip, $list, true)) {
                 $list[] = $ip;
             }
@@ -1578,9 +1582,9 @@ class TMV_Admin {
         
         global $wpdb;
         
-        // Remove orphaned postmeta
+        // Remove orphaned postmeta (scoped to tmv_ prefix only)
         $orphaned = $wpdb->query(
-            "DELETE pm FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE p.ID IS NULL"
+            "DELETE pm FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE p.ID IS NULL AND pm.meta_key LIKE 'tmv_%'"
         );
         
         // Remove old revisions (older than 30 days)

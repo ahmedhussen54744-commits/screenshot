@@ -25,11 +25,18 @@ class TMV_Security {
     }
     
     public static function enforce_ip_blacklist() {
+        $ip = $_SERVER['REMOTE_ADDR'];
+
+        // Check whitelist first - whitelisted IPs bypass the blacklist
+        $whitelist = get_option('tmv_ip_whitelist', array());
+        if (!empty($whitelist) && is_array($whitelist) && in_array($ip, $whitelist, true)) {
+            return;
+        }
+
         $blacklist = get_option('tmv_ip_blacklist', array());
         if (empty($blacklist) || !is_array($blacklist)) {
             return;
         }
-        $ip = $_SERVER['REMOTE_ADDR'];
         if (in_array($ip, $blacklist, true)) {
             wp_die('Access denied. Your IP address has been blocked.', 'Forbidden', array('response' => 403));
         }
