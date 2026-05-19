@@ -52,6 +52,27 @@
         </div>
     </section>
     
+    <!-- Latest News Section -->
+    <section class="tmv-news-section">
+        <h2 class="tmv-section-title">Latest News &amp; Updates</h2>
+        <div class="tmv-news-grid">
+            <?php
+            $news_query = new WP_Query(array(
+                'post_type' => 'post',
+                'posts_per_page' => 6,
+                'post_status' => 'publish',
+            ));
+            while ($news_query->have_posts()) : $news_query->the_post();
+                get_template_part('template-parts/content', 'post');
+            endwhile;
+            wp_reset_postdata();
+            ?>
+        </div>
+        <div class="tmv-news-more">
+            <a href="<?php echo esc_url(get_permalink(get_option('page_for_posts'))); ?>" class="tmv-hero-btn tmv-hero-btn-secondary">View All News</a>
+        </div>
+    </section>
+    
     <?php else: ?>
     
     <div class="tmv-container">

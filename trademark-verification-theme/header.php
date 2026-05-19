@@ -29,6 +29,7 @@
             <a href="<?php echo home_url('/'); ?>" <?php if (is_front_page()) echo 'class="active"'; ?>>Home</a>
             <a href="<?php echo home_url('/verify/'); ?>" <?php if (is_page('verify')) echo 'class="active"'; ?>>Verify</a>
             <a href="<?php echo home_url('/apply/'); ?>" <?php if (is_page('apply')) echo 'class="active"'; ?>>Apply</a>
+            <a href="<?php echo home_url('/blog/'); ?>" <?php if (is_home() || is_single() || is_archive()) echo 'class="active"'; ?>>News</a>
             <?php if (is_user_logged_in()) : ?>
                 <a href="<?php echo home_url('/dashboard/'); ?>" <?php if (is_page('dashboard')) echo 'class="active"'; ?>>Dashboard</a>
                 <a href="<?php echo wp_logout_url(home_url()); ?>">Logout</a>

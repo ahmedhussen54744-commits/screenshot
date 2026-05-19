@@ -6,6 +6,7 @@ class TMV_Frontend {
     public static function init() {
         add_shortcode('tmv_application_form', array(__CLASS__, 'render_application_form'));
         add_shortcode('tmv_verification_portal', array(__CLASS__, 'render_verification_portal'));
+        add_shortcode('tmv_news_feed', array(__CLASS__, 'render_news_feed'));
         add_action('wp_ajax_tmv_submit_application', array(__CLASS__, 'handle_application'));
         add_action('wp_ajax_nopriv_tmv_submit_application', array(__CLASS__, 'handle_application'));
         add_action('wp_ajax_tmv_verify_trademark', array(__CLASS__, 'verify_trademark'));
@@ -197,6 +198,77 @@ class TMV_Frontend {
         return ob_get_clean();
     }
     
+    public static function render_news_feed($atts = array()) {
+        $atts = shortcode_atts(array(
+            'count' => 6,
+            'category' => '',
+        ), $atts, 'tmv_news_feed');
+
+        $query_args = array(
+            'post_type' => 'post',
+            'posts_per_page' => intval($atts['count']),
+            'post_status' => 'publish',
+        );
+
+        if (!empty($atts['category'])) {
+            $query_args['category_name'] = sanitize_text_field($atts['category']);
+        }
+
+        $news_query = new WP_Query($query_args);
+
+        ob_start();
+        ?>
+        <div class="tmv-news-section tmv-news-shortcode">
+            <div class="tmv-news-grid">
+                <?php
+                if ($news_query->have_posts()) :
+                    while ($news_query->have_posts()) : $news_query->the_post();
+                        ?>
+                        <article class="tmv-post-card">
+                            <div class="tmv-post-thumbnail">
+                                <?php if (has_post_thumbnail()) : ?>
+                                    <?php the_post_thumbnail('medium_large'); ?>
+                                <?php endif; ?>
+                                <?php
+                                $video_id = get_post_meta(get_the_ID(), 'tmv_post_video', true);
+                                if ($video_id) : ?>
+                                    <div class="tmv-play-overlay">
+                                        <div class="tmv-play-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M8 5v14l11-7z" fill="#1a5c3a"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="tmv-post-content">
+                                <div class="tmv-post-meta">
+                                    <span class="tmv-post-date"><?php echo get_the_date(); ?></span>
+                                    <span class="tmv-post-category"><?php
+                                        $categories = get_the_category();
+                                        if (!empty($categories)) {
+                                            echo esc_html($categories[0]->name);
+                                        }
+                                    ?></span>
+                                </div>
+                                <h3 class="tmv-post-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+                                <p class="tmv-post-excerpt"><?php echo wp_trim_words(get_the_excerpt(), 20, '...'); ?></p>
+                                <a href="<?php the_permalink(); ?>" class="tmv-read-more">Read More</a>
+                            </div>
+                        </article>
+                        <?php
+                    endwhile;
+                    wp_reset_postdata();
+                else :
+                    echo '<p>No news posts found.</p>';
+                endif;
+                ?>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
     public static function handle_application() {
         // Verify nonce
         if (!wp_verify_nonce($_POST['tmv_nonce'], 'tmv_submit_app')) {
