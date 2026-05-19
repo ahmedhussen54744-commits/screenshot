@@ -16,13 +16,8 @@ class TMV_API {
     public static function handle_verify_redirect() {
         $code = get_query_var('tmv_code');
         
-        // Also check for ?code= query parameter
-        if (empty($code) && isset($_GET['code'])) {
-            $code = sanitize_text_field($_GET['code']);
-        }
-        
         if (!empty($code)) {
-            // Auto-fill the verification code
+            // Auto-fill the verification code (rewrite rule path only)
             add_action('wp_footer', function() use ($code) {
                 ?>
                 <script>
@@ -62,6 +57,6 @@ class TMV_API {
         $verify_code = get_post_meta($post_id, 'tmv_verify_code', true);
         $base_url = get_option('tmv_verify_base_url', home_url('/verify/'));
         
-        return rtrim($base_url, '/') . '/' . $verify_code;
+        return rtrim($base_url, '/') . '?code=' . $verify_code;
     }
 }

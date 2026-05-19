@@ -181,6 +181,12 @@
                 width: 150,
                 height: 150
             });
+        } else if (data.verify_code) {
+            var verifyUrl = tmvAjax.verify_url + '?code=' + data.verify_code;
+            var qrContainer = document.getElementById('tmv-result-qr');
+            if (qrContainer) {
+                qrContainer.innerHTML = '<a href="' + verifyUrl + '" target="_blank" style="word-break:break-all;font-size:12px;color:#1a5c3a;">' + verifyUrl + '</a>';
+            }
         }
     }
 

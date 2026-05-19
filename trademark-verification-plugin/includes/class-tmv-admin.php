@@ -191,7 +191,7 @@ class TMV_Admin {
             update_post_meta($post->ID, 'tmv_verify_code', $verify_code);
         }
         
-        $verify_url = !empty($custom_qr_url) ? $custom_qr_url : rtrim($verify_base, '/') . '/?code=' . $verify_code;
+        $verify_url = TMV_API::get_verify_url($post->ID);
         ?>
         <div class="tmv-qr-box">
             <p><strong>Verify Code:</strong></p>
@@ -211,7 +211,7 @@ class TMV_Admin {
         (function() {
             var verifyUrl = <?php echo wp_json_encode($verify_url); ?>;
             var qrSize = <?php echo intval($qr_size); ?>;
-            document.addEventListener('DOMContentLoaded', function() {
+            window.addEventListener('load', function() {
                 var container = document.getElementById('tmv-qr-display');
                 if (container && typeof QRCode !== 'undefined') {
                     new QRCode(container, {
@@ -219,6 +219,8 @@ class TMV_Admin {
                         width: qrSize,
                         height: qrSize
                     });
+                } else if (container) {
+                    container.innerHTML = '<a href="' + verifyUrl + '" target="_blank" style="word-break:break-all;font-size:12px;">' + verifyUrl + '</a>';
                 }
             });
         })();

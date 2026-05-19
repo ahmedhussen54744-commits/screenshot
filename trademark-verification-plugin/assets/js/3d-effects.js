@@ -27,6 +27,16 @@
     var MAX_CONNECTIONS = 800;
 
     function init() {
+        // Mobile/low-end device detection: reduce effects
+        var isMobile = window.innerWidth < 768;
+        var isLowEnd = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
+        if (isMobile || isLowEnd) {
+            PARTICLE_COUNT = 800;
+            SECONDARY_PARTICLE_COUNT = 200;
+            MAX_CONNECTIONS = 300;
+            CONNECTION_DISTANCE = 80;
+        }
+
         // Create canvas container
         var canvasContainer = document.createElement('div');
         canvasContainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.6;';
@@ -133,26 +143,28 @@
         linesMesh = new THREE.LineSegments(linesGeometry, linesMaterial);
         scene.add(linesMesh);
 
-        // --- 3D Wireframe Globe (Icosahedron) ---
-        var globeGeo = new THREE.IcosahedronGeometry(180, 2);
-        var globeMat = new THREE.MeshBasicMaterial({
-            color: 0x1a5c3a,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.15
-        });
-        globe = new THREE.Mesh(globeGeo, globeMat);
-        scene.add(globe);
+        // --- 3D Wireframe Globe (Icosahedron) --- skip on mobile/low-end
+        if (!isMobile && !isLowEnd) {
+            var globeGeo = new THREE.IcosahedronGeometry(180, 2);
+            var globeMat = new THREE.MeshBasicMaterial({
+                color: 0x1a5c3a,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.15
+            });
+            globe = new THREE.Mesh(globeGeo, globeMat);
+            scene.add(globe);
 
-        // Globe edges for subtle gold glow
-        var edgesGeo = new THREE.EdgesGeometry(globeGeo);
-        var edgesMat = new THREE.LineBasicMaterial({
-            color: 0xffd700,
-            transparent: true,
-            opacity: 0.1
-        });
-        globeEdges = new THREE.LineSegments(edgesGeo, edgesMat);
-        scene.add(globeEdges);
+            // Globe edges for subtle gold glow
+            var edgesGeo = new THREE.EdgesGeometry(globeGeo);
+            var edgesMat = new THREE.LineBasicMaterial({
+                color: 0xffd700,
+                transparent: true,
+                opacity: 0.1
+            });
+            globeEdges = new THREE.LineSegments(edgesGeo, edgesMat);
+            scene.add(globeEdges);
+        }
 
         // Renderer
         renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
@@ -260,12 +272,14 @@
         particlesSecondary.rotation.z = time * 0.2;
 
         // Globe rotation on all 3 axes
-        globe.rotation.x += 0.001;
-        globe.rotation.y += 0.0015;
-        globe.rotation.z += 0.0005;
-        globeEdges.rotation.x = globe.rotation.x;
-        globeEdges.rotation.y = globe.rotation.y;
-        globeEdges.rotation.z = globe.rotation.z;
+        if (globe) {
+            globe.rotation.x += 0.001;
+            globe.rotation.y += 0.0015;
+            globe.rotation.z += 0.0005;
+            globeEdges.rotation.x = globe.rotation.x;
+            globeEdges.rotation.y = globe.rotation.y;
+            globeEdges.rotation.z = globe.rotation.z;
+        }
 
         // Update connection lines
         updateConnections();
