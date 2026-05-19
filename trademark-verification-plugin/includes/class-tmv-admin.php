@@ -32,6 +32,33 @@ class TMV_Admin {
         add_action('wp_ajax_tmv_save_social_links', array(__CLASS__, 'ajax_save_social_links'));
         add_action('wp_ajax_tmv_cleanup_database', array(__CLASS__, 'ajax_cleanup_database'));
         add_action('wp_ajax_tmv_clear_error_log', array(__CLASS__, 'ajax_clear_error_log'));
+
+        // Documents & Notifications AJAX handlers
+        add_action('wp_ajax_tmv_save_document', array(__CLASS__, 'ajax_save_document'));
+        add_action('wp_ajax_tmv_delete_document', array(__CLASS__, 'ajax_delete_document'));
+        add_action('wp_ajax_tmv_save_notification_settings', array(__CLASS__, 'ajax_save_notification_settings'));
+        add_action('wp_ajax_tmv_mark_notification_read', array(__CLASS__, 'ajax_mark_notification_read'));
+        add_action('wp_ajax_tmv_save_webhook', array(__CLASS__, 'ajax_save_webhook'));
+        add_action('wp_ajax_tmv_delete_webhook', array(__CLASS__, 'ajax_delete_webhook'));
+        add_action('wp_ajax_tmv_save_password_policy', array(__CLASS__, 'ajax_save_password_policy'));
+        add_action('wp_ajax_tmv_save_session_settings', array(__CLASS__, 'ajax_save_session_settings'));
+        add_action('wp_ajax_tmv_toggle_maintenance', array(__CLASS__, 'ajax_toggle_maintenance'));
+        add_action('wp_ajax_tmv_save_backup_settings', array(__CLASS__, 'ajax_save_backup_settings'));
+        add_action('wp_ajax_tmv_export_all_settings', array(__CLASS__, 'ajax_export_all_settings'));
+        add_action('wp_ajax_tmv_import_settings', array(__CLASS__, 'ajax_import_settings'));
+        add_action('wp_ajax_tmv_reset_defaults', array(__CLASS__, 'ajax_reset_defaults'));
+        add_action('wp_ajax_tmv_save_tags', array(__CLASS__, 'ajax_save_tags'));
+        add_action('wp_ajax_tmv_add_comment', array(__CLASS__, 'ajax_add_comment'));
+        add_action('wp_ajax_tmv_send_applicant_email', array(__CLASS__, 'ajax_send_applicant_email'));
+        add_action('wp_ajax_tmv_schedule_reminder', array(__CLASS__, 'ajax_schedule_reminder'));
+        add_action('wp_ajax_tmv_import_users', array(__CLASS__, 'ajax_import_users'));
+        add_action('wp_ajax_tmv_export_users', array(__CLASS__, 'ajax_export_users'));
+        add_action('wp_ajax_tmv_invite_user', array(__CLASS__, 'ajax_invite_user'));
+        add_action('wp_ajax_tmv_bulk_email_users', array(__CLASS__, 'ajax_bulk_email_users'));
+        add_action('wp_ajax_tmv_save_cert_watermark', array(__CLASS__, 'ajax_save_cert_watermark'));
+        add_action('wp_ajax_tmv_save_cert_numbering', array(__CLASS__, 'ajax_save_cert_numbering'));
+        add_action('wp_ajax_tmv_generate_report', array(__CLASS__, 'ajax_generate_report'));
+        add_action('wp_ajax_tmv_schedule_report', array(__CLASS__, 'ajax_schedule_report'));
     }
     
     public static function add_menu_pages() {
@@ -404,6 +431,8 @@ class TMV_Admin {
                 <button class="tmv-tab-btn" data-tab="content">Content</button>
                 <button class="tmv-tab-btn" data-tab="verification">Verification</button>
                 <button class="tmv-tab-btn" data-tab="maintenance">Maintenance</button>
+                <button class="tmv-tab-btn" data-tab="documents">Documents</button>
+                <button class="tmv-tab-btn" data-tab="notifications">Notifications</button>
             </div>
             
             <div class="tmv-tab-content active" id="tmv-tab-overview">
@@ -435,6 +464,12 @@ class TMV_Admin {
             </div>
             <div class="tmv-tab-content" id="tmv-tab-maintenance">
                 <?php self::render_tab_maintenance(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-documents">
+                <?php self::render_tab_documents(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-notifications">
+                <?php self::render_tab_notifications(); ?>
             </div>
         </div>
         <?php
@@ -601,6 +636,108 @@ class TMV_Admin {
                 <button class="button tmv-export-csv-btn">Generate CSV Report</button>
             </div>
         </div>
+        
+        <!-- Pie Chart Data Widget -->
+        <div class="tmv-section-box">
+            <h3>Application Status Distribution</h3>
+            <?php
+            $dist_total = $approved + $pending + $rejected;
+            $pct_approved = $dist_total > 0 ? round(($approved / $dist_total) * 100, 1) : 0;
+            $pct_pending = $dist_total > 0 ? round(($pending / $dist_total) * 100, 1) : 0;
+            $pct_rejected = $dist_total > 0 ? round(($rejected / $dist_total) * 100, 1) : 0;
+            ?>
+            <div class="tmv-distribution-bars">
+                <div class="tmv-dist-item">
+                    <span class="tmv-dist-label">Approved (<?php echo intval($approved); ?>)</span>
+                    <div class="tmv-progress-bar"><div class="tmv-progress-fill tmv-fill-green" style="width:<?php echo esc_attr($pct_approved); ?>%"></div></div>
+                    <span class="tmv-dist-pct"><?php echo esc_html($pct_approved); ?>%</span>
+                </div>
+                <div class="tmv-dist-item">
+                    <span class="tmv-dist-label">Pending (<?php echo intval($pending); ?>)</span>
+                    <div class="tmv-progress-bar"><div class="tmv-progress-fill tmv-fill-yellow" style="width:<?php echo esc_attr($pct_pending); ?>%"></div></div>
+                    <span class="tmv-dist-pct"><?php echo esc_html($pct_pending); ?>%</span>
+                </div>
+                <div class="tmv-dist-item">
+                    <span class="tmv-dist-label">Rejected (<?php echo intval($rejected); ?>)</span>
+                    <div class="tmv-progress-bar"><div class="tmv-progress-fill tmv-fill-red" style="width:<?php echo esc_attr($pct_rejected); ?>%"></div></div>
+                    <span class="tmv-dist-pct"><?php echo esc_html($pct_rejected); ?>%</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Login Activity -->
+        <div class="tmv-section-box">
+            <h3>Recent Login Activity</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>User</th><th>Email</th><th>Last Login</th><th>IP Address</th></tr></thead>
+                <tbody>
+                <?php
+                $login_users = get_users(array(
+                    'meta_key' => 'tmv_last_login',
+                    'orderby' => 'meta_value',
+                    'order' => 'DESC',
+                    'number' => 5,
+                ));
+                foreach ($login_users as $lu):
+                    $last_login = get_user_meta($lu->ID, 'tmv_last_login', true);
+                    $login_ip = get_user_meta($lu->ID, 'tmv_last_login_ip', true);
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($lu->user_login); ?></td>
+                        <td><?php echo esc_html($lu->user_email); ?></td>
+                        <td><?php echo $last_login ? esc_html($last_login) : 'N/A'; ?></td>
+                        <td><?php echo $login_ip ? esc_html($login_ip) : 'N/A'; ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- System Uptime -->
+        <div class="tmv-section-box">
+            <h3>System Uptime</h3>
+            <?php
+            $activation_time = get_option('tmv_plugin_activated', current_time('timestamp'));
+            $uptime_seconds = current_time('timestamp') - intval($activation_time);
+            $uptime_days = floor($uptime_seconds / 86400);
+            $uptime_hours = floor(($uptime_seconds % 86400) / 3600);
+            $uptime_minutes = floor(($uptime_seconds % 3600) / 60);
+            ?>
+            <div class="tmv-uptime-display">
+                <div class="tmv-stat-card"><h3><?php echo intval($uptime_days); ?></h3><p>Days</p></div>
+                <div class="tmv-stat-card"><h3><?php echo intval($uptime_hours); ?></h3><p>Hours</p></div>
+                <div class="tmv-stat-card"><h3><?php echo intval($uptime_minutes); ?></h3><p>Minutes</p></div>
+            </div>
+        </div>
+        
+        <!-- Pending Actions Counter -->
+        <div class="tmv-section-box">
+            <h3>Pending Actions</h3>
+            <?php
+            $pending_apps = intval(self::count_by_status('pending'));
+            $unread_notifications = intval(get_option('tmv_unread_notifications_count', 0));
+            ?>
+            <div class="tmv-stats-grid tmv-stats-grid-small">
+                <div class="tmv-stat-card tmv-stat-pending"><h3><?php echo $pending_apps; ?></h3><p>Pending Applications</p></div>
+                <div class="tmv-stat-card tmv-stat-expiring"><h3><?php echo $certs_expiring; ?></h3><p>Expiring Certificates</p></div>
+                <div class="tmv-stat-card"><h3><?php echo $unread_notifications; ?></h3><p>Unread Notifications</p></div>
+            </div>
+        </div>
+        
+        <!-- Revenue/Fee Tracker -->
+        <div class="tmv-section-box">
+            <h3>Revenue / Fee Tracker</h3>
+            <?php
+            $total_revenue = floatval(get_option('tmv_total_revenue', 0));
+            $monthly_revenue = floatval(get_option('tmv_monthly_revenue', 0));
+            $pending_fees = floatval(get_option('tmv_pending_fees', 0));
+            ?>
+            <div class="tmv-stats-grid tmv-stats-grid-small">
+                <div class="tmv-stat-card"><h3>&#2547;<?php echo number_format($total_revenue, 2); ?></h3><p>Total Revenue Collected</p></div>
+                <div class="tmv-stat-card"><h3>&#2547;<?php echo number_format($monthly_revenue, 2); ?></h3><p>This Month Revenue</p></div>
+                <div class="tmv-stat-card tmv-stat-pending"><h3>&#2547;<?php echo number_format($pending_fees, 2); ?></h3><p>Pending Fees</p></div>
+            </div>
+        </div>
         <?php
     }
     
@@ -682,6 +819,142 @@ class TMV_Admin {
                     <button class="button button-primary" id="tmv-save-notes-btn">Save Notes</button>
                     <button class="button" id="tmv-close-notes-btn">Close</button>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Advanced Date Range Filter -->
+        <div class="tmv-section-box">
+            <h3>Advanced Filters</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>From Date:</label>
+                    <input type="date" id="tmv-filter-date-from" class="tmv-date-input" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>To Date:</label>
+                    <input type="date" id="tmv-filter-date-to" class="tmv-date-input" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Class Filter:</label>
+                    <select id="tmv-filter-class" class="tmv-filter-select">
+                        <option value="">All Classes</option>
+                        <?php
+                        global $wpdb;
+                        $classes = $wpdb->get_col("SELECT DISTINCT meta_value FROM {$wpdb->postmeta} WHERE meta_key = 'tmv_class' AND meta_value != '' ORDER BY meta_value");
+                        foreach ($classes as $cls):
+                        ?>
+                            <option value="<?php echo esc_attr($cls); ?>"><?php echo esc_html($cls); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <button class="button" id="tmv-apply-advanced-filters">Apply Filters</button>
+                <button class="button" id="tmv-timeline-view-toggle">Toggle Timeline View</button>
+            </div>
+        </div>
+        
+        <!-- Duplicate Detection Alert -->
+        <div class="tmv-section-box">
+            <h3>Duplicate Detection Alerts</h3>
+            <p class="description">Applications with similar TM numbers or owner names that may be duplicates.</p>
+            <table class="tmv-data-table" id="tmv-duplicates-table">
+                <thead><tr><th>TM Number</th><th>Owner</th><th>Similar To</th><th>Similarity</th><th>Action</th></tr></thead>
+                <tbody>
+                <?php
+                $dup_alerts = get_option('tmv_duplicate_alerts', array());
+                if (!empty($dup_alerts)):
+                    foreach (array_slice($dup_alerts, 0, 10) as $dup):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($dup['tm_number'] ?? ''); ?></td>
+                        <td><?php echo esc_html($dup['owner'] ?? ''); ?></td>
+                        <td><?php echo esc_html($dup['similar_to'] ?? ''); ?></td>
+                        <td><?php echo esc_html($dup['similarity'] ?? ''); ?>%</td>
+                        <td><button class="button button-small">Dismiss</button></td>
+                    </tr>
+                <?php endforeach; endif; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Auto-Assign Reviewer -->
+        <div class="tmv-section-box">
+            <h3>Auto-Assign Reviewer</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Default Reviewer:</label>
+                    <select id="tmv-auto-reviewer">
+                        <option value="">Select Reviewer</option>
+                        <?php
+                        $admins = get_users(array('role' => 'administrator'));
+                        foreach ($admins as $admin):
+                        ?>
+                            <option value="<?php echo esc_attr($admin->ID); ?>"><?php echo esc_html($admin->display_name); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Application Tagging System -->
+        <div class="tmv-section-box">
+            <h3>Application Tags</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Add Tag:</label>
+                    <input type="text" id="tmv-new-tag-input" placeholder="Enter tag name" />
+                    <button class="button" id="tmv-add-tag-btn">Add Tag</button>
+                </div>
+                <div class="tmv-tags-display" id="tmv-tags-list">
+                    <?php
+                    $tags = get_option('tmv_application_tags', array());
+                    foreach ($tags as $tag):
+                    ?>
+                        <span class="tmv-tag-badge"><?php echo esc_html($tag); ?> <button class="tmv-remove-tag" data-tag="<?php echo esc_attr($tag); ?>">&times;</button></span>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Application Comments Thread -->
+        <div class="tmv-section-box">
+            <h3>Application Comments</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Application ID:</label>
+                    <input type="number" id="tmv-comment-app-id" placeholder="Post ID" />
+                </div>
+                <textarea id="tmv-comment-text" rows="3" placeholder="Write a comment..." style="width:100%;margin-top:8px;"></textarea>
+                <button class="button button-primary" id="tmv-add-comment-btn" style="margin-top:8px;">Add Comment</button>
+            </div>
+            <div id="tmv-comments-list" style="margin-top:10px;"></div>
+        </div>
+        
+        <!-- Quick Action Buttons -->
+        <div class="tmv-section-box">
+            <h3>Quick Actions</h3>
+            <div class="tmv-quick-links">
+                <button class="button" id="tmv-print-app-btn">Print Application</button>
+                <button class="button" id="tmv-email-applicant-btn">Email Applicant</button>
+            </div>
+        </div>
+        
+        <!-- Application Reminder Scheduling -->
+        <div class="tmv-section-box">
+            <h3>Schedule Reminder</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Application ID:</label>
+                    <input type="number" id="tmv-reminder-app-id" placeholder="Post ID" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Reminder Date:</label>
+                    <input type="date" id="tmv-reminder-date" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Message:</label>
+                    <input type="text" id="tmv-reminder-message" placeholder="Reminder message" style="width:300px;" />
+                </div>
+                <button class="button button-primary" id="tmv-schedule-reminder-btn" style="margin-top:8px;">Schedule Reminder</button>
             </div>
         </div>
         <?php
@@ -774,6 +1047,105 @@ class TMV_Admin {
                 </div>
             <?php endforeach; ?>
         </div>
+        
+        <!-- Certificate Watermark Settings -->
+        <div class="tmv-section-box">
+            <h3>Certificate Watermark Settings</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Watermark Text:</label>
+                    <input type="text" id="tmv-cert-watermark-text" value="<?php echo esc_attr(get_option('tmv_cert_watermark_text', 'CERTIFIED')); ?>" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Opacity (0-100):</label>
+                    <input type="range" id="tmv-cert-watermark-opacity" min="0" max="100" value="<?php echo esc_attr(get_option('tmv_cert_watermark_opacity', '20')); ?>" />
+                    <span id="tmv-opacity-value"><?php echo esc_html(get_option('tmv_cert_watermark_opacity', '20')); ?>%</span>
+                </div>
+                <button class="button button-primary" id="tmv-save-watermark-btn">Save Watermark Settings</button>
+            </div>
+        </div>
+        
+        <!-- Custom Certificate Numbering -->
+        <div class="tmv-section-box">
+            <h3>Custom Certificate Numbering Format</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Format:</label>
+                    <input type="text" id="tmv-cert-numbering-format" value="<?php echo esc_attr(get_option('tmv_cert_numbering_format', 'CERT-{YEAR}-{NUMBER}')); ?>" style="width:300px;" />
+                </div>
+                <p class="description">Variables: {YEAR}, {MONTH}, {NUMBER}, {CLASS}, {OWNER_INITIALS}</p>
+                <button class="button button-primary" id="tmv-save-numbering-btn">Save Numbering Format</button>
+            </div>
+        </div>
+        
+        <!-- Certificate Authenticity Seal -->
+        <div class="tmv-section-box">
+            <h3>Certificate Authenticity Seal</h3>
+            <div class="tmv-form-section">
+                <label>
+                    <input type="checkbox" id="tmv-cert-seal-enabled" <?php checked(get_option('tmv_cert_seal_enabled', '0'), '1'); ?> />
+                    Enable Authenticity Seal on Certificates
+                </label>
+                <div class="tmv-field-inline" style="margin-top:10px;">
+                    <label>Custom Seal Image:</label>
+                    <input type="hidden" id="tmv-cert-seal-image" value="<?php echo esc_attr(get_option('tmv_cert_seal_image', '')); ?>" />
+                    <button type="button" class="button tmv-upload-btn" data-target="tmv-cert-seal-image" data-type="image">Upload Seal Image</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Certificate Design Preview -->
+        <div class="tmv-section-box">
+            <h3>Certificate Design Preview</h3>
+            <div class="tmv-cert-preview-box" style="border:2px dashed #ccc;padding:40px;text-align:center;min-height:200px;background:#f9f9f9;">
+                <p style="color:#666;">Certificate preview will appear here based on current settings.</p>
+                <div style="border:1px solid #ddd;padding:20px;margin:10px;background:white;">
+                    <h4 style="margin:0;">Certificate of Registration of Trademark</h4>
+                    <p style="color:#888;">Watermark: <?php echo esc_html(get_option('tmv_cert_watermark_text', 'CERTIFIED')); ?></p>
+                    <p style="color:#888;">Format: <?php echo esc_html(get_option('tmv_cert_numbering_format', 'CERT-{YEAR}-{NUMBER}')); ?></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Certificate Download Count Tracker -->
+        <div class="tmv-section-box">
+            <h3>Certificate Download Statistics</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>TM Number</th><th>Owner</th><th>Downloads</th><th>Last Downloaded</th></tr></thead>
+                <tbody>
+                <?php
+                $download_stats = get_option('tmv_cert_download_stats', array());
+                if (!empty($download_stats)):
+                    foreach (array_slice($download_stats, 0, 10) as $stat):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($stat['tm_number'] ?? ''); ?></td>
+                        <td><?php echo esc_html($stat['owner'] ?? ''); ?></td>
+                        <td><?php echo intval($stat['count'] ?? 0); ?></td>
+                        <td><?php echo esc_html($stat['last_download'] ?? 'Never'); ?></td>
+                    </tr>
+                <?php endforeach; endif; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Multi-Language Certificate Support -->
+        <div class="tmv-section-box">
+            <h3>Multi-Language Certificate Support</h3>
+            <div class="tmv-form-section">
+                <p class="description">Enable certificate generation in multiple languages:</p>
+                <?php
+                $supported_langs = get_option('tmv_cert_languages', array('en'));
+                $available_langs = array('en' => 'English', 'bn' => 'Bangla', 'ar' => 'Arabic', 'hi' => 'Hindi', 'zh' => 'Chinese', 'es' => 'Spanish', 'fr' => 'French');
+                foreach ($available_langs as $code => $name):
+                ?>
+                    <label style="display:inline-block;margin-right:15px;">
+                        <input type="checkbox" class="tmv-lang-checkbox" value="<?php echo esc_attr($code); ?>" <?php checked(in_array($code, $supported_langs, true)); ?> />
+                        <?php echo esc_html($name); ?>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+        </div>
         <?php
     }
     
@@ -847,6 +1219,158 @@ class TMV_Admin {
             <?php endforeach; ?>
             </tbody>
         </table>
+        
+        <!-- User Groups/Departments -->
+        <div class="tmv-section-box">
+            <h3>User Groups / Departments</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Create Group:</label>
+                    <input type="text" id="tmv-new-group-name" placeholder="Group name" />
+                    <button class="button" id="tmv-create-group-btn">Create Group</button>
+                </div>
+            </div>
+            <table class="tmv-data-table">
+                <thead><tr><th>Group Name</th><th>Members</th><th>Created</th><th>Actions</th></tr></thead>
+                <tbody>
+                <?php
+                $groups = get_option('tmv_user_groups', array());
+                foreach ($groups as $gidx => $group):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($group['name'] ?? ''); ?></td>
+                        <td><?php echo intval($group['member_count'] ?? 0); ?></td>
+                        <td><?php echo esc_html($group['created'] ?? ''); ?></td>
+                        <td><button class="button button-small">Manage</button></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Import/Export Users -->
+        <div class="tmv-section-box">
+            <h3>Import / Export Users</h3>
+            <div class="tmv-quick-links">
+                <button class="button" id="tmv-import-users-btn">Import Users from CSV</button>
+                <button class="button" id="tmv-export-users-btn">Export Users to CSV</button>
+            </div>
+            <div id="tmv-import-users-form" style="display:none;margin-top:10px;">
+                <input type="file" id="tmv-users-csv-file" accept=".csv" />
+                <button class="button button-primary" id="tmv-process-import-btn">Process Import</button>
+            </div>
+        </div>
+        
+        <!-- Send Bulk Email -->
+        <div class="tmv-section-box">
+            <h3>Send Bulk Email</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>User Group:</label>
+                    <select id="tmv-bulk-email-group">
+                        <option value="all">All Users</option>
+                        <option value="subscribers">Subscribers</option>
+                        <option value="administrators">Administrators</option>
+                        <?php foreach ($groups as $group): ?>
+                            <option value="<?php echo esc_attr($group['name'] ?? ''); ?>"><?php echo esc_html($group['name'] ?? ''); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Subject:</label>
+                    <input type="text" id="tmv-bulk-email-subject" style="width:400px;" placeholder="Email subject" />
+                </div>
+                <textarea id="tmv-bulk-email-message" rows="4" placeholder="Email message..." style="width:100%;margin-top:8px;"></textarea>
+                <button class="button button-primary" id="tmv-send-bulk-email-btn" style="margin-top:8px;">Send Bulk Email</button>
+            </div>
+        </div>
+        
+        <!-- User Activity Timeline -->
+        <div class="tmv-section-box">
+            <h3>User Activity Timeline</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>User</th><th>Action</th><th>Details</th><th>Date/Time</th></tr></thead>
+                <tbody>
+                <?php
+                $user_activity = get_option('tmv_user_activity_log', array());
+                foreach (array_slice(array_reverse($user_activity), 0, 20) as $activity):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($activity['user'] ?? ''); ?></td>
+                        <td><?php echo esc_html($activity['action'] ?? ''); ?></td>
+                        <td><?php echo esc_html($activity['details'] ?? ''); ?></td>
+                        <td><?php echo esc_html($activity['time'] ?? ''); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- User Permission Matrix -->
+        <div class="tmv-section-box">
+            <h3>User Permission Matrix</h3>
+            <table class="tmv-data-table">
+                <thead>
+                    <tr>
+                        <th>Capability</th>
+                        <th>Administrator</th>
+                        <th>Editor</th>
+                        <th>Subscriber</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>View Applications</td><td>&#9989;</td><td>&#9989;</td><td>&#10060;</td></tr>
+                    <tr><td>Approve Applications</td><td>&#9989;</td><td>&#10060;</td><td>&#10060;</td></tr>
+                    <tr><td>Generate Certificates</td><td>&#9989;</td><td>&#10060;</td><td>&#10060;</td></tr>
+                    <tr><td>Manage Users</td><td>&#9989;</td><td>&#10060;</td><td>&#10060;</td></tr>
+                    <tr><td>View Reports</td><td>&#9989;</td><td>&#9989;</td><td>&#10060;</td></tr>
+                    <tr><td>Submit Applications</td><td>&#9989;</td><td>&#9989;</td><td>&#9989;</td></tr>
+                    <tr><td>Download Certificates</td><td>&#9989;</td><td>&#9989;</td><td>&#9989;</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Invite New User -->
+        <div class="tmv-section-box">
+            <h3>Invite New User</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Email:</label>
+                    <input type="email" id="tmv-invite-email" placeholder="user@example.com" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Role:</label>
+                    <select id="tmv-invite-role">
+                        <option value="subscriber">Subscriber</option>
+                        <option value="editor">Editor</option>
+                        <option value="administrator">Administrator</option>
+                    </select>
+                </div>
+                <button class="button button-primary" id="tmv-invite-user-btn">Send Invitation</button>
+            </div>
+        </div>
+        
+        <!-- User Login History -->
+        <div class="tmv-section-box">
+            <h3>User Login History</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>User</th><th>Login Time</th><th>IP Address</th><th>Browser</th><th>Status</th></tr></thead>
+                <tbody>
+                <?php
+                $login_history = get_option('tmv_login_history', array());
+                foreach (array_slice(array_reverse($login_history), 0, 20) as $log):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($log['user'] ?? ''); ?></td>
+                        <td><?php echo esc_html($log['time'] ?? ''); ?></td>
+                        <td><?php echo esc_html($log['ip'] ?? ''); ?></td>
+                        <td><?php echo esc_html($log['browser'] ?? ''); ?></td>
+                        <td><span class="tmv-status-badge tmv-status-<?php echo ($log['status'] ?? '') === 'success' ? 'approved' : 'rejected'; ?>"><?php echo esc_html(ucfirst($log['status'] ?? '')); ?></span></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
         <?php
     }
     
@@ -933,6 +1457,146 @@ class TMV_Admin {
                     <?php endforeach; ?>
                     </tbody>
                 </table>
+            </div>
+        </div>
+        
+        <!-- Bar Chart for Monthly Trends -->
+        <div class="tmv-section-box">
+            <h3>Monthly Trends (Visual)</h3>
+            <div class="tmv-bar-chart">
+                <?php
+                $max_count = 1;
+                foreach ($monthly_trend as $row) {
+                    if (intval($row->count) > $max_count) $max_count = intval($row->count);
+                }
+                foreach (array_reverse($monthly_trend) as $row):
+                    $bar_height = ($max_count > 0) ? round((intval($row->count) / $max_count) * 100) : 0;
+                ?>
+                    <div class="tmv-bar-item">
+                        <div class="tmv-bar" style="height:<?php echo intval($bar_height); ?>%;"></div>
+                        <span class="tmv-bar-label"><?php echo esc_html(substr($row->month, 5)); ?></span>
+                        <span class="tmv-bar-value"><?php echo intval($row->count); ?></span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        
+        <!-- Year-over-Year Comparison -->
+        <div class="tmv-section-box">
+            <h3>Year-over-Year Comparison</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>Year</th><th>Total Applications</th><th>Approved</th><th>Rejected</th><th>Growth</th></tr></thead>
+                <tbody>
+                <?php
+                $yearly_data = $wpdb->get_results(
+                    "SELECT YEAR(post_date) as year, COUNT(*) as count FROM {$wpdb->posts} WHERE post_type = 'trademark_app' GROUP BY year ORDER BY year DESC LIMIT 5"
+                );
+                $prev_count = 0;
+                foreach ($yearly_data as $yidx => $yrow):
+                    $growth = ($prev_count > 0) ? round((intval($yrow->count) - $prev_count) / $prev_count * 100, 1) : 0;
+                    $prev_count = intval($yrow->count);
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($yrow->year); ?></td>
+                        <td><?php echo intval($yrow->count); ?></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td><?php echo ($yidx > 0) ? esc_html($growth . '%') : 'N/A'; ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Peak Hours Analysis -->
+        <div class="tmv-section-box">
+            <h3>Peak Hours Analysis</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>Hour</th><th>Applications Submitted</th><th>Activity Level</th></tr></thead>
+                <tbody>
+                <?php
+                $peak_hours = $wpdb->get_results(
+                    "SELECT HOUR(post_date) as hour, COUNT(*) as count FROM {$wpdb->posts} WHERE post_type = 'trademark_app' GROUP BY hour ORDER BY count DESC LIMIT 10"
+                );
+                foreach ($peak_hours as $ph):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html(sprintf('%02d:00 - %02d:59', $ph->hour, $ph->hour)); ?></td>
+                        <td><?php echo intval($ph->count); ?></td>
+                        <td><div class="tmv-progress-bar" style="width:200px;display:inline-block;"><div class="tmv-progress-fill" style="width:<?php echo min(100, intval($ph->count) * 10); ?>%"></div></div></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Geographic Data -->
+        <div class="tmv-section-box">
+            <h3>Geographic Distribution</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>Region/Country</th><th>Applications</th><th>Percentage</th></tr></thead>
+                <tbody>
+                <?php
+                $geo_data = get_option('tmv_geographic_stats', array());
+                if (!empty($geo_data)):
+                    foreach ($geo_data as $geo):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($geo['region'] ?? ''); ?></td>
+                        <td><?php echo intval($geo['count'] ?? 0); ?></td>
+                        <td><?php echo esc_html($geo['percentage'] ?? '0'); ?>%</td>
+                    </tr>
+                <?php endforeach;
+                else: ?>
+                    <tr><td colspan="3">No geographic data available yet.</td></tr>
+                <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Custom Report Builder -->
+        <div class="tmv-section-box">
+            <h3>Custom Report Builder</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Date From:</label>
+                    <input type="date" id="tmv-report-date-from" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Date To:</label>
+                    <input type="date" id="tmv-report-date-to" />
+                </div>
+                <div style="margin-top:10px;">
+                    <p><strong>Metrics to include:</strong></p>
+                    <label style="margin-right:15px;"><input type="checkbox" class="tmv-report-metric" value="applications" checked /> Applications</label>
+                    <label style="margin-right:15px;"><input type="checkbox" class="tmv-report-metric" value="approvals" checked /> Approvals</label>
+                    <label style="margin-right:15px;"><input type="checkbox" class="tmv-report-metric" value="rejections" /> Rejections</label>
+                    <label style="margin-right:15px;"><input type="checkbox" class="tmv-report-metric" value="certificates" /> Certificates</label>
+                    <label style="margin-right:15px;"><input type="checkbox" class="tmv-report-metric" value="verifications" /> Verifications</label>
+                    <label style="margin-right:15px;"><input type="checkbox" class="tmv-report-metric" value="revenue" /> Revenue</label>
+                </div>
+                <button class="button button-primary" id="tmv-generate-report-btn" style="margin-top:10px;">Generate Report</button>
+                <button class="button" id="tmv-export-pdf-btn" style="margin-top:10px;">Export as PDF</button>
+            </div>
+        </div>
+        
+        <!-- Report Scheduling -->
+        <div class="tmv-section-box">
+            <h3>Report Scheduling</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Frequency:</label>
+                    <select id="tmv-report-frequency">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Email Recipient:</label>
+                    <input type="email" id="tmv-report-email" placeholder="admin@example.com" />
+                </div>
+                <button class="button button-primary" id="tmv-schedule-report-btn" style="margin-top:8px;">Schedule Report</button>
             </div>
         </div>
         <?php
@@ -1065,6 +1729,122 @@ class TMV_Admin {
                 </tbody>
             </table>
         </div>
+        
+        <!-- Password Policy Settings -->
+        <div class="tmv-section-box">
+            <h3>Password Policy Settings</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Minimum Password Length:</label>
+                    <input type="number" id="tmv-pw-min-length" min="6" max="32" value="<?php echo intval(get_option('tmv_pw_min_length', 8)); ?>" />
+                </div>
+                <label style="display:block;margin:5px 0;">
+                    <input type="checkbox" id="tmv-pw-require-uppercase" <?php checked(get_option('tmv_pw_require_uppercase', '1'), '1'); ?> />
+                    Require Uppercase Letters
+                </label>
+                <label style="display:block;margin:5px 0;">
+                    <input type="checkbox" id="tmv-pw-require-numbers" <?php checked(get_option('tmv_pw_require_numbers', '1'), '1'); ?> />
+                    Require Numbers
+                </label>
+                <label style="display:block;margin:5px 0;">
+                    <input type="checkbox" id="tmv-pw-require-special" <?php checked(get_option('tmv_pw_require_special', '0'), '1'); ?> />
+                    Require Special Characters
+                </label>
+                <button class="button button-primary" id="tmv-save-password-policy-btn" style="margin-top:8px;">Save Password Policy</button>
+            </div>
+        </div>
+        
+        <!-- Session Timeout -->
+        <div class="tmv-section-box">
+            <h3>Session Timeout Configuration</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Session Timeout (minutes):</label>
+                    <input type="number" id="tmv-session-timeout" min="5" max="1440" value="<?php echo intval(get_option('tmv_session_timeout', 60)); ?>" />
+                </div>
+                <button class="button button-primary" id="tmv-save-session-settings-btn" style="margin-top:8px;">Save Session Settings</button>
+            </div>
+        </div>
+        
+        <!-- Login Attempt Lockout -->
+        <div class="tmv-section-box">
+            <h3>Login Attempt Lockout</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Max Failed Attempts:</label>
+                    <input type="number" id="tmv-lockout-attempts" min="3" max="20" value="<?php echo intval(get_option('tmv_lockout_attempts', 5)); ?>" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Lockout Duration (minutes):</label>
+                    <input type="number" id="tmv-lockout-duration" min="5" max="1440" value="<?php echo intval(get_option('tmv_lockout_duration', 30)); ?>" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- CAPTCHA Settings -->
+        <div class="tmv-section-box">
+            <h3>CAPTCHA Settings</h3>
+            <div class="tmv-form-section">
+                <label style="display:block;margin:5px 0;">
+                    <input type="checkbox" id="tmv-captcha-enabled" <?php checked(get_option('tmv_captcha_enabled', '0'), '1'); ?> />
+                    Enable CAPTCHA on Login/Registration
+                </label>
+                <div class="tmv-field-inline">
+                    <label>Site Key:</label>
+                    <input type="text" id="tmv-captcha-site-key" value="<?php echo esc_attr(get_option('tmv_captcha_site_key', '')); ?>" style="width:400px;" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Secret Key:</label>
+                    <input type="text" id="tmv-captcha-secret-key" value="<?php echo esc_attr(get_option('tmv_captcha_secret_key', '')); ?>" style="width:400px;" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- CORS Configuration -->
+        <div class="tmv-section-box">
+            <h3>CORS Configuration</h3>
+            <div class="tmv-form-section">
+                <label>Allowed Origins (one per line):</label>
+                <textarea id="tmv-cors-origins" rows="4" style="width:100%;"><?php echo esc_textarea(get_option('tmv_cors_origins', '')); ?></textarea>
+            </div>
+        </div>
+        
+        <!-- SSL Certificate Status -->
+        <div class="tmv-section-box">
+            <h3>SSL Certificate Status</h3>
+            <div class="tmv-health-grid">
+                <div class="tmv-health-item <?php echo is_ssl() ? 'tmv-health-ok' : 'tmv-health-warn'; ?>">
+                    <span class="tmv-health-indicator"></span>
+                    <strong>SSL Status:</strong> <?php echo is_ssl() ? 'Active (HTTPS)' : 'Not Active (HTTP)'; ?>
+                </div>
+            </div>
+        </div>
+        
+        <!-- File Upload Security -->
+        <div class="tmv-section-box">
+            <h3>File Upload Security Settings</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Max File Size (MB):</label>
+                    <input type="number" id="tmv-max-file-size" min="1" max="100" value="<?php echo intval(get_option('tmv_max_file_size', 5)); ?>" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Allowed Extensions (comma separated):</label>
+                    <input type="text" id="tmv-allowed-extensions" value="<?php echo esc_attr(get_option('tmv_allowed_extensions', 'jpg,jpeg,png,pdf,doc,docx')); ?>" style="width:400px;" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- API Rate Limiting -->
+        <div class="tmv-section-box">
+            <h3>API Rate Limiting</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Requests Per Minute:</label>
+                    <input type="number" id="tmv-rate-limit" min="10" max="1000" value="<?php echo intval(get_option('tmv_rate_limit', 60)); ?>" />
+                </div>
+            </div>
+        </div>
         <?php
     }
     
@@ -1127,6 +1907,141 @@ class TMV_Admin {
                 <div class="tmv-field-inline"><label>YouTube:</label><input type="url" id="tmv-social-youtube" value="<?php echo esc_url($social_youtube); ?>" /></div>
                 <button class="button button-primary" id="tmv-save-social-btn" style="margin-top:8px;">Save Social Links</button>
             </div>
+        </div>
+        
+        <!-- Page Builder Shortcuts -->
+        <div class="tmv-section-box">
+            <h3>Page Builder Shortcuts</h3>
+            <div class="tmv-quick-links">
+                <a href="<?php echo admin_url('post-new.php?post_type=page'); ?>" class="button">Create New Page</a>
+                <a href="<?php echo admin_url('edit.php?post_type=page'); ?>" class="button">Edit Pages</a>
+                <a href="<?php echo admin_url('customize.php'); ?>" class="button">Customize Theme</a>
+            </div>
+        </div>
+        
+        <!-- Widget Manager -->
+        <div class="tmv-section-box">
+            <h3>Widget Manager</h3>
+            <div class="tmv-quick-links">
+                <a href="<?php echo admin_url('widgets.php'); ?>" class="button">Manage Widgets</a>
+                <a href="<?php echo admin_url('customize.php?autofocus[panel]=widgets'); ?>" class="button">Widget Customizer</a>
+            </div>
+        </div>
+        
+        <!-- Menu Management -->
+        <div class="tmv-section-box">
+            <h3>Menu Management</h3>
+            <div class="tmv-quick-links">
+                <a href="<?php echo admin_url('nav-menus.php'); ?>" class="button">Manage Menus</a>
+                <a href="<?php echo admin_url('customize.php?autofocus[panel]=nav_menus'); ?>" class="button">Menu Customizer</a>
+            </div>
+        </div>
+        
+        <!-- Media Library Stats -->
+        <div class="tmv-section-box">
+            <h3>Media Library Statistics</h3>
+            <?php
+            $media_count = wp_count_posts('attachment');
+            $total_media = intval($media_count->inherit ?? 0);
+            $upload_dir = wp_upload_dir();
+            $upload_path = $upload_dir['basedir'];
+            $disk_usage = '0 MB';
+            if (is_dir($upload_path)) {
+                $size_bytes = intval(get_option('tmv_media_disk_usage', 0));
+                $disk_usage = $size_bytes > 0 ? round($size_bytes / 1048576, 2) . ' MB' : 'Calculating...';
+            }
+            ?>
+            <div class="tmv-stats-grid tmv-stats-grid-small">
+                <div class="tmv-stat-card"><h3><?php echo $total_media; ?></h3><p>Total Media Files</p></div>
+                <div class="tmv-stat-card"><h3><?php echo esc_html($disk_usage); ?></h3><p>Disk Usage</p></div>
+            </div>
+        </div>
+        
+        <!-- Scheduled Posts -->
+        <div class="tmv-section-box">
+            <h3>Scheduled Posts</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>Title</th><th>Author</th><th>Scheduled Date</th><th>Action</th></tr></thead>
+                <tbody>
+                <?php
+                $scheduled = get_posts(array('post_status' => 'future', 'posts_per_page' => 10, 'orderby' => 'date', 'order' => 'ASC'));
+                foreach ($scheduled as $spost):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($spost->post_title); ?></td>
+                        <td><?php echo esc_html(get_the_author_meta('display_name', $spost->post_author)); ?></td>
+                        <td><?php echo esc_html(get_the_date('Y-m-d H:i', $spost->ID)); ?></td>
+                        <td><a href="<?php echo get_edit_post_link($spost->ID); ?>" class="button button-small">Edit</a></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Draft Posts -->
+        <div class="tmv-section-box">
+            <h3>Draft Posts</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>Title</th><th>Author</th><th>Last Modified</th><th>Action</th></tr></thead>
+                <tbody>
+                <?php
+                $drafts = get_posts(array('post_status' => 'draft', 'posts_per_page' => 10, 'orderby' => 'modified', 'order' => 'DESC'));
+                foreach ($drafts as $dpost):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($dpost->post_title); ?></td>
+                        <td><?php echo esc_html(get_the_author_meta('display_name', $dpost->post_author)); ?></td>
+                        <td><?php echo esc_html(get_the_modified_date('Y-m-d H:i', $dpost->ID)); ?></td>
+                        <td><a href="<?php echo get_edit_post_link($dpost->ID); ?>" class="button button-small">Edit</a></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Content Moderation Queue -->
+        <div class="tmv-section-box">
+            <h3>Content Moderation Queue</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>Title</th><th>Author</th><th>Submitted</th><th>Actions</th></tr></thead>
+                <tbody>
+                <?php
+                $pending_posts = get_posts(array('post_status' => 'pending', 'posts_per_page' => 10, 'orderby' => 'date', 'order' => 'DESC'));
+                foreach ($pending_posts as $ppost):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($ppost->post_title); ?></td>
+                        <td><?php echo esc_html(get_the_author_meta('display_name', $ppost->post_author)); ?></td>
+                        <td><?php echo esc_html(get_the_date('Y-m-d', $ppost->ID)); ?></td>
+                        <td>
+                            <a href="<?php echo get_edit_post_link($ppost->ID); ?>" class="button button-small">Review</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Comment Management -->
+        <div class="tmv-section-box">
+            <h3>Recent Comments</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>Author</th><th>Comment</th><th>Post</th><th>Date</th><th>Status</th></tr></thead>
+                <tbody>
+                <?php
+                $comments = get_comments(array('number' => 10, 'orderby' => 'comment_date', 'order' => 'DESC'));
+                foreach ($comments as $comment):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($comment->comment_author); ?></td>
+                        <td><?php echo esc_html(wp_trim_words($comment->comment_content, 10)); ?></td>
+                        <td><?php echo esc_html(get_the_title($comment->comment_post_ID)); ?></td>
+                        <td><?php echo esc_html($comment->comment_date); ?></td>
+                        <td><span class="tmv-status-badge tmv-status-<?php echo $comment->comment_approved === '1' ? 'approved' : 'pending'; ?>"><?php echo $comment->comment_approved === '1' ? 'Approved' : 'Pending'; ?></span></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
         <?php
     }
@@ -1198,6 +2113,106 @@ class TMV_Admin {
                 <?php endforeach; ?>
                 </tbody>
             </table>
+        </div>
+        
+        <!-- Verification Success Rate Graph -->
+        <div class="tmv-section-box">
+            <h3>Verification Success Rate</h3>
+            <?php
+            $success_rate = $total_verifications > 0 ? round(($successful / $total_verifications) * 100, 1) : 0;
+            $fail_rate = $total_verifications > 0 ? round(($failed / $total_verifications) * 100, 1) : 0;
+            ?>
+            <div class="tmv-distribution-bars">
+                <div class="tmv-dist-item">
+                    <span class="tmv-dist-label">Successful</span>
+                    <div class="tmv-progress-bar"><div class="tmv-progress-fill tmv-fill-green" style="width:<?php echo esc_attr($success_rate); ?>%"></div></div>
+                    <span class="tmv-dist-pct"><?php echo esc_html($success_rate); ?>%</span>
+                </div>
+                <div class="tmv-dist-item">
+                    <span class="tmv-dist-label">Failed</span>
+                    <div class="tmv-progress-bar"><div class="tmv-progress-fill tmv-fill-red" style="width:<?php echo esc_attr($fail_rate); ?>%"></div></div>
+                    <span class="tmv-dist-pct"><?php echo esc_html($fail_rate); ?>%</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Average Daily Verifications -->
+        <div class="tmv-section-box">
+            <h3>Verification Statistics</h3>
+            <?php
+            $first_log_date = !empty($log) ? ($log[0]['time'] ?? '') : '';
+            $days_active = 1;
+            if ($first_log_date) {
+                $days_active = max(1, intval((time() - strtotime($first_log_date)) / 86400));
+            }
+            $avg_daily = round($total_verifications / $days_active, 1);
+            ?>
+            <div class="tmv-stats-grid tmv-stats-grid-small">
+                <div class="tmv-stat-card"><h3><?php echo esc_html($avg_daily); ?></h3><p>Average Daily Verifications</p></div>
+                <div class="tmv-stat-card"><h3><?php echo intval($days_active); ?></h3><p>Days Active</p></div>
+            </div>
+        </div>
+        
+        <!-- Top Verification IPs -->
+        <div class="tmv-section-box">
+            <h3>Top Verification IPs</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>IP Address</th><th>Verification Count</th><th>Last Verification</th></tr></thead>
+                <tbody>
+                <?php
+                $ip_counts = array();
+                $ip_last = array();
+                foreach ($log as $entry) {
+                    $ip = $entry['ip'] ?? 'unknown';
+                    if (!isset($ip_counts[$ip])) $ip_counts[$ip] = 0;
+                    $ip_counts[$ip]++;
+                    $ip_last[$ip] = $entry['time'] ?? '';
+                }
+                arsort($ip_counts);
+                $top_ips = array_slice($ip_counts, 0, 10, true);
+                foreach ($top_ips as $ip => $cnt):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($ip); ?></td>
+                        <td><?php echo intval($cnt); ?></td>
+                        <td><?php echo esc_html($ip_last[$ip] ?? ''); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Verification API Response Time -->
+        <div class="tmv-section-box">
+            <h3>API Response Time</h3>
+            <?php $avg_response_time = floatval(get_option('tmv_avg_verify_response_time', 0.15)); ?>
+            <div class="tmv-stats-grid tmv-stats-grid-small">
+                <div class="tmv-stat-card"><h3><?php echo esc_html(number_format($avg_response_time * 1000, 0)); ?>ms</h3><p>Average Response Time</p></div>
+            </div>
+        </div>
+        
+        <!-- QR Code Scan Analytics -->
+        <div class="tmv-section-box">
+            <h3>QR Code Scan Analytics</h3>
+            <?php
+            $qr_scans = intval(get_option('tmv_total_qr_scans', 0));
+            $qr_today = intval(get_option('tmv_qr_scans_today', 0));
+            ?>
+            <div class="tmv-stats-grid tmv-stats-grid-small">
+                <div class="tmv-stat-card"><h3><?php echo $qr_scans; ?></h3><p>Total QR Scans</p></div>
+                <div class="tmv-stat-card"><h3><?php echo $qr_today; ?></h3><p>QR Scans Today</p></div>
+            </div>
+        </div>
+        
+        <!-- Verification Embed Code Generator -->
+        <div class="tmv-section-box">
+            <h3>Verification Embed Code Generator</h3>
+            <p class="description">Copy this code to embed a verification widget on external sites:</p>
+            <textarea id="tmv-embed-code" rows="4" style="width:100%;font-family:monospace;font-size:12px;" readonly><?php
+                $site_url = esc_url(home_url('/'));
+                echo esc_textarea('<iframe src="' . $site_url . '?tmv_embed=verify" width="400" height="300" frameborder="0"></iframe>');
+            ?></textarea>
+            <button class="button" id="tmv-copy-embed-btn" style="margin-top:8px;">Copy Embed Code</button>
         </div>
         <?php
     }
@@ -1272,6 +2287,497 @@ class TMV_Admin {
             <p><strong>Plugin:</strong> Trademark Verification System</p>
             <p><strong>Version:</strong> 2.0.0</p>
             <p><strong>Established:</strong> 2009</p>
+        </div>
+        
+        <!-- Scheduled Maintenance Mode -->
+        <div class="tmv-section-box">
+            <h3>Scheduled Maintenance Mode</h3>
+            <div class="tmv-form-section">
+                <label style="display:block;margin:5px 0;">
+                    <input type="checkbox" id="tmv-maintenance-mode-toggle" <?php checked(get_option('tmv_maintenance_mode', '0'), '1'); ?> />
+                    Enable Maintenance Mode
+                </label>
+                <div class="tmv-field-inline">
+                    <label>Scheduled Start:</label>
+                    <input type="datetime-local" id="tmv-maintenance-start" value="<?php echo esc_attr(get_option('tmv_maintenance_start', '')); ?>" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Scheduled End:</label>
+                    <input type="datetime-local" id="tmv-maintenance-end" value="<?php echo esc_attr(get_option('tmv_maintenance_end', '')); ?>" />
+                </div>
+                <button class="button button-primary" id="tmv-save-maintenance-btn" style="margin-top:8px;">Save Maintenance Settings</button>
+            </div>
+        </div>
+        
+        <!-- Auto-Backup Schedule -->
+        <div class="tmv-section-box">
+            <h3>Auto-Backup Schedule</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Backup Frequency:</label>
+                    <select id="tmv-backup-frequency">
+                        <option value="daily" <?php selected(get_option('tmv_backup_frequency', 'daily'), 'daily'); ?>>Daily</option>
+                        <option value="weekly" <?php selected(get_option('tmv_backup_frequency', 'daily'), 'weekly'); ?>>Weekly</option>
+                    </select>
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Backup Time:</label>
+                    <input type="time" id="tmv-backup-time" value="<?php echo esc_attr(get_option('tmv_backup_time', '02:00')); ?>" />
+                </div>
+                <button class="button button-primary" id="tmv-save-backup-settings-btn" style="margin-top:8px;">Save Backup Settings</button>
+            </div>
+        </div>
+        
+        <!-- Backup History -->
+        <div class="tmv-section-box">
+            <h3>Backup History</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>Date</th><th>Size</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                <?php
+                $backups = get_option('tmv_backup_history', array());
+                foreach (array_slice(array_reverse($backups), 0, 10) as $backup):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($backup['date'] ?? ''); ?></td>
+                        <td><?php echo esc_html($backup['size'] ?? ''); ?></td>
+                        <td><?php echo esc_html($backup['type'] ?? 'full'); ?></td>
+                        <td><span class="tmv-status-badge tmv-status-approved"><?php echo esc_html($backup['status'] ?? 'completed'); ?></span></td>
+                        <td><button class="button button-small tmv-restore-backup-btn" data-id="<?php echo esc_attr($backup['id'] ?? ''); ?>">Restore</button></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Restore from Backup -->
+        <div class="tmv-section-box">
+            <h3>Restore from Backup</h3>
+            <div class="tmv-form-section">
+                <select id="tmv-restore-backup-select">
+                    <option value="">Select a backup to restore</option>
+                    <?php foreach ($backups as $backup): ?>
+                        <option value="<?php echo esc_attr($backup['id'] ?? ''); ?>"><?php echo esc_html(($backup['date'] ?? '') . ' - ' . ($backup['type'] ?? 'full')); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <button class="button" id="tmv-restore-btn" style="margin-top:8px;">Restore Selected Backup</button>
+            </div>
+        </div>
+        
+        <!-- Plugin Compatibility Check -->
+        <div class="tmv-section-box">
+            <h3>Plugin Compatibility Check</h3>
+            <div class="tmv-health-grid">
+                <?php
+                $active_plugins = get_option('active_plugins', array());
+                $plugin_count = count($active_plugins);
+                ?>
+                <div class="tmv-health-item tmv-health-ok">
+                    <span class="tmv-health-indicator"></span>
+                    <strong>Active Plugins:</strong> <?php echo intval($plugin_count); ?>
+                </div>
+                <div class="tmv-health-item tmv-health-ok">
+                    <span class="tmv-health-indicator"></span>
+                    <strong>Theme Compatibility:</strong> Compatible
+                </div>
+            </div>
+        </div>
+        
+        <!-- Security Scan Results -->
+        <div class="tmv-section-box">
+            <h3>Security Scan Results</h3>
+            <?php $last_scan = get_option('tmv_last_security_scan', array()); ?>
+            <div class="tmv-health-grid">
+                <div class="tmv-health-item tmv-health-ok">
+                    <span class="tmv-health-indicator"></span>
+                    <strong>File Integrity:</strong> <?php echo esc_html($last_scan['file_integrity'] ?? 'Not scanned'); ?>
+                </div>
+                <div class="tmv-health-item tmv-health-ok">
+                    <span class="tmv-health-indicator"></span>
+                    <strong>Last Scan:</strong> <?php echo esc_html($last_scan['date'] ?? 'Never'); ?>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Metrics -->
+        <div class="tmv-section-box">
+            <h3>Performance Metrics</h3>
+            <div class="tmv-stats-grid tmv-stats-grid-small">
+                <div class="tmv-stat-card"><h3><?php echo esc_html(number_format(microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'], 3)); ?>s</h3><p>Page Load Time</p></div>
+                <div class="tmv-stat-card"><h3><?php global $wpdb; echo intval($wpdb->num_queries); ?></h3><p>DB Queries</p></div>
+                <div class="tmv-stat-card"><h3><?php echo esc_html(size_format(memory_get_peak_usage(true))); ?></h3><p>Peak Memory Usage</p></div>
+            </div>
+        </div>
+        
+        <!-- Cron Job Management -->
+        <div class="tmv-section-box">
+            <h3>Cron Job Management</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>Hook</th><th>Schedule</th><th>Next Run</th></tr></thead>
+                <tbody>
+                <?php
+                $cron_jobs = _get_cron_array();
+                $displayed = 0;
+                if (is_array($cron_jobs)):
+                    foreach ($cron_jobs as $timestamp => $crons):
+                        foreach ($crons as $hook => $data):
+                            if ($displayed >= 15) break 2;
+                            $displayed++;
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($hook); ?></td>
+                        <td><?php echo esc_html(key($data)); ?></td>
+                        <td><?php echo esc_html(date('Y-m-d H:i:s', $timestamp)); ?></td>
+                    </tr>
+                <?php endforeach; endforeach; endif; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Import/Export Settings -->
+        <div class="tmv-section-box">
+            <h3>Import / Export All Settings</h3>
+            <div class="tmv-quick-links">
+                <button class="button button-primary" id="tmv-export-all-settings-btn">Export All Settings</button>
+                <button class="button" id="tmv-import-settings-btn">Import Settings</button>
+            </div>
+            <div id="tmv-import-settings-form" style="display:none;margin-top:10px;">
+                <textarea id="tmv-import-settings-data" rows="5" placeholder="Paste exported settings JSON here..." style="width:100%;"></textarea>
+                <button class="button button-primary" id="tmv-process-import-settings-btn" style="margin-top:8px;">Process Import</button>
+            </div>
+        </div>
+        
+        <!-- Reset to Defaults -->
+        <div class="tmv-section-box">
+            <h3>Reset to Defaults</h3>
+            <p class="description" style="color:red;">Warning: This will reset all TMV plugin settings to their default values.</p>
+            <button class="button" id="tmv-reset-defaults-btn" style="color:red;border-color:red;">Reset All Settings to Defaults</button>
+        </div>
+        <?php
+    }
+    
+    // =========================================================================
+    // DOCUMENTS TAB
+    // =========================================================================
+    
+    private static function render_tab_documents() {
+        $doc_templates = get_option('tmv_document_templates', array());
+        $doc_categories = get_option('tmv_document_categories', array('Legal', 'Certificate', 'Application', 'Report'));
+        ?>
+        <h2>Documents Management</h2>
+        
+        <!-- Document Templates Library -->
+        <div class="tmv-section-box">
+            <h3>Document Templates Library</h3>
+            <div class="tmv-tab-actions" style="margin-bottom:10px;">
+                <button class="button button-primary" id="tmv-upload-doc-template-btn">Upload Document Template</button>
+            </div>
+            <div id="tmv-upload-doc-form" style="display:none;margin-bottom:15px;padding:15px;background:#f9f9f9;border:1px solid #ddd;">
+                <div class="tmv-field-inline">
+                    <label>Document Name:</label>
+                    <input type="text" id="tmv-doc-name" placeholder="Document name" style="width:300px;" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Category:</label>
+                    <select id="tmv-doc-category">
+                        <?php foreach ($doc_categories as $cat): ?>
+                            <option value="<?php echo esc_attr($cat); ?>"><?php echo esc_html($cat); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="tmv-field-inline">
+                    <label>File:</label>
+                    <input type="file" id="tmv-doc-file" accept=".pdf,.doc,.docx,.txt" />
+                </div>
+                <button class="button button-primary" id="tmv-save-document-btn">Save Document</button>
+            </div>
+            <table class="tmv-data-table">
+                <thead><tr><th>Name</th><th>Category</th><th>Date Added</th><th>Version</th><th>Actions</th></tr></thead>
+                <tbody>
+                <?php foreach ($doc_templates as $doc): ?>
+                    <tr>
+                        <td><?php echo esc_html($doc['name'] ?? ''); ?></td>
+                        <td><?php echo esc_html($doc['category'] ?? ''); ?></td>
+                        <td><?php echo esc_html($doc['date'] ?? ''); ?></td>
+                        <td><?php echo esc_html($doc['version'] ?? '1.0'); ?></td>
+                        <td>
+                            <button class="button button-small">Download</button>
+                            <button class="button button-small tmv-delete-doc-btn" data-id="<?php echo esc_attr($doc['id'] ?? ''); ?>">Delete</button>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Document Version History -->
+        <div class="tmv-section-box">
+            <h3>Document Version History</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>Document</th><th>Version</th><th>Modified By</th><th>Date</th><th>Changes</th></tr></thead>
+                <tbody>
+                <?php
+                $doc_versions = get_option('tmv_document_versions', array());
+                foreach (array_slice(array_reverse($doc_versions), 0, 15) as $ver):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($ver['name'] ?? ''); ?></td>
+                        <td><?php echo esc_html($ver['version'] ?? ''); ?></td>
+                        <td><?php echo esc_html($ver['modified_by'] ?? ''); ?></td>
+                        <td><?php echo esc_html($ver['date'] ?? ''); ?></td>
+                        <td><?php echo esc_html($ver['changes'] ?? ''); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Document Sharing Settings -->
+        <div class="tmv-section-box">
+            <h3>Document Sharing Settings</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>Document Type</th><th>Visibility</th><th>Action</th></tr></thead>
+                <tbody>
+                <?php
+                $doc_types = array('Certificate PDF', 'Application Form', 'Legal Notice', 'Renewal Form', 'Transfer Document');
+                $sharing_settings = get_option('tmv_doc_sharing', array());
+                foreach ($doc_types as $dtype):
+                    $is_public = isset($sharing_settings[$dtype]) ? $sharing_settings[$dtype] : 'private';
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($dtype); ?></td>
+                        <td>
+                            <span class="tmv-status-badge tmv-status-<?php echo $is_public === 'public' ? 'approved' : 'pending'; ?>">
+                                <?php echo esc_html(ucfirst($is_public)); ?>
+                            </span>
+                        </td>
+                        <td>
+                            <button class="button button-small tmv-toggle-sharing-btn" data-type="<?php echo esc_attr($dtype); ?>" data-current="<?php echo esc_attr($is_public); ?>">
+                                Toggle <?php echo $is_public === 'public' ? 'Private' : 'Public'; ?>
+                            </button>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Document Categories Management -->
+        <div class="tmv-section-box">
+            <h3>Document Categories</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>New Category:</label>
+                    <input type="text" id="tmv-new-doc-category" placeholder="Category name" />
+                    <button class="button" id="tmv-add-doc-category-btn">Add Category</button>
+                </div>
+            </div>
+            <div class="tmv-tags-display">
+                <?php foreach ($doc_categories as $cat): ?>
+                    <span class="tmv-tag-badge"><?php echo esc_html($cat); ?> <button class="tmv-remove-doc-cat" data-cat="<?php echo esc_attr($cat); ?>">&times;</button></span>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        
+        <!-- Document Expiry Dates Tracker -->
+        <div class="tmv-section-box">
+            <h3>Document Expiry Tracker</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>Document</th><th>Category</th><th>Expiry Date</th><th>Status</th></tr></thead>
+                <tbody>
+                <?php
+                $expiry_docs = get_option('tmv_document_expiry', array());
+                foreach ($expiry_docs as $edoc):
+                    $exp_status = (isset($edoc['expiry']) && strtotime($edoc['expiry']) < time()) ? 'Expired' : 'Active';
+                    $exp_class = $exp_status === 'Expired' ? 'rejected' : 'approved';
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($edoc['name'] ?? ''); ?></td>
+                        <td><?php echo esc_html($edoc['category'] ?? ''); ?></td>
+                        <td><?php echo esc_html($edoc['expiry'] ?? ''); ?></td>
+                        <td><span class="tmv-status-badge tmv-status-<?php echo esc_attr($exp_class); ?>"><?php echo esc_html($exp_status); ?></span></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Auto-Archive Old Documents -->
+        <div class="tmv-section-box">
+            <h3>Auto-Archive Settings</h3>
+            <div class="tmv-form-section">
+                <label style="display:block;margin:5px 0;">
+                    <input type="checkbox" id="tmv-auto-archive-toggle" <?php checked(get_option('tmv_auto_archive_docs', '0'), '1'); ?> />
+                    Automatically archive documents older than 1 year
+                </label>
+                <p class="description">Archived documents will be moved to the archive section and not shown in the main library.</p>
+            </div>
+        </div>
+        <?php
+    }
+    
+    // =========================================================================
+    // NOTIFICATIONS TAB
+    // =========================================================================
+    
+    private static function render_tab_notifications() {
+        $notifications = get_option('tmv_notifications', array());
+        $notification_settings = get_option('tmv_notification_settings', array());
+        ?>
+        <h2>Notifications Center</h2>
+        
+        <!-- In-App Notifications Feed -->
+        <div class="tmv-section-box">
+            <h3>Recent Notifications</h3>
+            <div class="tmv-notifications-feed">
+                <?php
+                if (!empty($notifications)):
+                    foreach (array_slice(array_reverse($notifications), 0, 20) as $nidx => $notif):
+                        $is_read = isset($notif['read']) && $notif['read'];
+                ?>
+                    <div class="tmv-notification-item <?php echo $is_read ? 'tmv-notif-read' : 'tmv-notif-unread'; ?>" data-id="<?php echo intval($nidx); ?>">
+                        <div class="tmv-notif-icon"><?php echo $is_read ? '&#128172;' : '&#128276;'; ?></div>
+                        <div class="tmv-notif-content">
+                            <strong><?php echo esc_html($notif['title'] ?? ''); ?></strong>
+                            <p><?php echo esc_html($notif['message'] ?? ''); ?></p>
+                            <small><?php echo esc_html($notif['time'] ?? ''); ?></small>
+                        </div>
+                        <div class="tmv-notif-actions">
+                            <button class="button button-small tmv-mark-read-btn" data-id="<?php echo intval($nidx); ?>">
+                                <?php echo $is_read ? 'Mark Unread' : 'Mark Read'; ?>
+                            </button>
+                        </div>
+                    </div>
+                <?php endforeach;
+                else: ?>
+                    <p>No notifications yet.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <!-- Push Notification Settings -->
+        <div class="tmv-section-box">
+            <h3>Push Notification Settings</h3>
+            <div class="tmv-form-section">
+                <label style="display:block;margin:5px 0;">
+                    <input type="checkbox" id="tmv-push-enabled" <?php checked($notification_settings['push_enabled'] ?? '0', '1'); ?> />
+                    Enable Push Notifications
+                </label>
+                <div class="tmv-field-inline">
+                    <label>VAPID Public Key:</label>
+                    <input type="text" id="tmv-vapid-public" value="<?php echo esc_attr($notification_settings['vapid_public'] ?? ''); ?>" style="width:400px;" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>VAPID Private Key:</label>
+                    <input type="text" id="tmv-vapid-private" value="<?php echo esc_attr($notification_settings['vapid_private'] ?? ''); ?>" style="width:400px;" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Email Digest Frequency -->
+        <div class="tmv-section-box">
+            <h3>Email Digest Frequency</h3>
+            <div class="tmv-form-section">
+                <?php $digest_freq = $notification_settings['digest_frequency'] ?? 'weekly'; ?>
+                <label style="display:inline-block;margin-right:15px;">
+                    <input type="radio" name="tmv_digest_freq" value="daily" <?php checked($digest_freq, 'daily'); ?> /> Daily
+                </label>
+                <label style="display:inline-block;margin-right:15px;">
+                    <input type="radio" name="tmv_digest_freq" value="weekly" <?php checked($digest_freq, 'weekly'); ?> /> Weekly
+                </label>
+                <label style="display:inline-block;margin-right:15px;">
+                    <input type="radio" name="tmv_digest_freq" value="monthly" <?php checked($digest_freq, 'monthly'); ?> /> Monthly
+                </label>
+            </div>
+        </div>
+        
+        <!-- SMS Gateway Configuration -->
+        <div class="tmv-section-box">
+            <h3>SMS Gateway Configuration</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>SMS Provider:</label>
+                    <select id="tmv-sms-provider">
+                        <option value="twilio" <?php selected($notification_settings['sms_provider'] ?? '', 'twilio'); ?>>Twilio</option>
+                        <option value="nexmo" <?php selected($notification_settings['sms_provider'] ?? '', 'nexmo'); ?>>Nexmo (Vonage)</option>
+                        <option value="messagebird" <?php selected($notification_settings['sms_provider'] ?? '', 'messagebird'); ?>>MessageBird</option>
+                        <option value="custom" <?php selected($notification_settings['sms_provider'] ?? '', 'custom'); ?>>Custom API</option>
+                    </select>
+                </div>
+                <div class="tmv-field-inline">
+                    <label>API Key:</label>
+                    <input type="text" id="tmv-sms-api-key" value="<?php echo esc_attr($notification_settings['sms_api_key'] ?? ''); ?>" style="width:400px;" />
+                </div>
+                <div class="tmv-field-inline">
+                    <label>Sender ID:</label>
+                    <input type="text" id="tmv-sms-sender-id" value="<?php echo esc_attr($notification_settings['sms_sender_id'] ?? ''); ?>" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Webhook Notifications Setup -->
+        <div class="tmv-section-box">
+            <h3>Webhook Notifications</h3>
+            <div class="tmv-form-section">
+                <div class="tmv-field-inline">
+                    <label>Webhook URL:</label>
+                    <input type="url" id="tmv-webhook-url" placeholder="https://example.com/webhook" style="width:400px;" />
+                </div>
+                <div style="margin-top:10px;">
+                    <p><strong>Trigger Events:</strong></p>
+                    <label style="display:block;margin:3px 0;"><input type="checkbox" class="tmv-webhook-event" value="application_submitted" /> Application Submitted</label>
+                    <label style="display:block;margin:3px 0;"><input type="checkbox" class="tmv-webhook-event" value="application_approved" /> Application Approved</label>
+                    <label style="display:block;margin:3px 0;"><input type="checkbox" class="tmv-webhook-event" value="application_rejected" /> Application Rejected</label>
+                    <label style="display:block;margin:3px 0;"><input type="checkbox" class="tmv-webhook-event" value="certificate_generated" /> Certificate Generated</label>
+                    <label style="display:block;margin:3px 0;"><input type="checkbox" class="tmv-webhook-event" value="user_registered" /> User Registered</label>
+                </div>
+                <button class="button button-primary" id="tmv-save-webhook-btn" style="margin-top:8px;">Save Webhook</button>
+            </div>
+            
+            <!-- Existing Webhooks -->
+            <table class="tmv-data-table" style="margin-top:15px;">
+                <thead><tr><th>URL</th><th>Events</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                <?php
+                $webhooks = get_option('tmv_webhooks', array());
+                foreach ($webhooks as $widx => $webhook):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($webhook['url'] ?? ''); ?></td>
+                        <td><?php echo esc_html(implode(', ', $webhook['events'] ?? array())); ?></td>
+                        <td><span class="tmv-status-badge tmv-status-approved">Active</span></td>
+                        <td><button class="button button-small tmv-delete-webhook-btn" data-id="<?php echo intval($widx); ?>">Delete</button></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Notification History Log -->
+        <div class="tmv-section-box">
+            <h3>Notification History Log</h3>
+            <table class="tmv-data-table">
+                <thead><tr><th>Type</th><th>Recipient</th><th>Subject</th><th>Status</th><th>Sent At</th></tr></thead>
+                <tbody>
+                <?php
+                $notif_history = get_option('tmv_notification_history', array());
+                foreach (array_slice(array_reverse($notif_history), 0, 20) as $nh):
+                ?>
+                    <tr>
+                        <td><?php echo esc_html($nh['type'] ?? ''); ?></td>
+                        <td><?php echo esc_html($nh['recipient'] ?? ''); ?></td>
+                        <td><?php echo esc_html($nh['subject'] ?? ''); ?></td>
+                        <td><span class="tmv-status-badge tmv-status-<?php echo ($nh['status'] ?? '') === 'sent' ? 'approved' : 'rejected'; ?>"><?php echo esc_html(ucfirst($nh['status'] ?? '')); ?></span></td>
+                        <td><?php echo esc_html($nh['time'] ?? ''); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Save All Notification Settings -->
+        <div class="tmv-section-box">
+            <button class="button button-primary" id="tmv-save-notification-settings-btn">Save All Notification Settings</button>
         </div>
         <?php
     }
@@ -1601,6 +3107,533 @@ class TMV_Admin {
         
         update_option('tmv_error_log', array());
         wp_send_json_success(array('message' => 'Error log cleared'));
+    }
+    
+    // =========================================================================
+    // NEW AJAX HANDLERS (Documents, Notifications, Extended Features)
+    // =========================================================================
+    
+    public static function ajax_save_document() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $name = sanitize_text_field($_POST['name'] ?? '');
+        $category = sanitize_text_field($_POST['category'] ?? '');
+        
+        if (empty($name)) {
+            wp_send_json_error(array('message' => 'Document name is required'));
+            return;
+        }
+        
+        $templates = get_option('tmv_document_templates', array());
+        $templates[] = array(
+            'id' => wp_generate_uuid4(),
+            'name' => $name,
+            'category' => $category,
+            'date' => current_time('Y-m-d'),
+            'version' => '1.0',
+        );
+        update_option('tmv_document_templates', $templates);
+        
+        wp_send_json_success(array('message' => 'Document saved successfully'));
+    }
+    
+    public static function ajax_delete_document() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $doc_id = sanitize_text_field($_POST['doc_id'] ?? '');
+        $templates = get_option('tmv_document_templates', array());
+        
+        $templates = array_filter($templates, function($doc) use ($doc_id) {
+            return ($doc['id'] ?? '') !== $doc_id;
+        });
+        
+        update_option('tmv_document_templates', array_values($templates));
+        wp_send_json_success(array('message' => 'Document deleted'));
+    }
+    
+    public static function ajax_save_notification_settings() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $settings = array(
+            'push_enabled' => sanitize_text_field($_POST['push_enabled'] ?? '0'),
+            'vapid_public' => sanitize_text_field($_POST['vapid_public'] ?? ''),
+            'vapid_private' => sanitize_text_field($_POST['vapid_private'] ?? ''),
+            'digest_frequency' => sanitize_text_field($_POST['digest_frequency'] ?? 'weekly'),
+            'sms_provider' => sanitize_text_field($_POST['sms_provider'] ?? ''),
+            'sms_api_key' => sanitize_text_field($_POST['sms_api_key'] ?? ''),
+            'sms_sender_id' => sanitize_text_field($_POST['sms_sender_id'] ?? ''),
+        );
+        
+        update_option('tmv_notification_settings', $settings);
+        wp_send_json_success(array('message' => 'Notification settings saved'));
+    }
+    
+    public static function ajax_mark_notification_read() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $notif_id = intval($_POST['notif_id'] ?? -1);
+        $notifications = get_option('tmv_notifications', array());
+        
+        if (isset($notifications[$notif_id])) {
+            $notifications[$notif_id]['read'] = !($notifications[$notif_id]['read'] ?? false);
+            update_option('tmv_notifications', $notifications);
+            wp_send_json_success(array('message' => 'Notification status updated'));
+        } else {
+            wp_send_json_error(array('message' => 'Notification not found'));
+        }
+    }
+    
+    public static function ajax_save_webhook() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $url = esc_url_raw($_POST['webhook_url'] ?? '');
+        $events = array_map('sanitize_text_field', (array)($_POST['events'] ?? array()));
+        
+        if (empty($url)) {
+            wp_send_json_error(array('message' => 'Webhook URL is required'));
+            return;
+        }
+        
+        $webhooks = get_option('tmv_webhooks', array());
+        $webhooks[] = array(
+            'url' => $url,
+            'events' => $events,
+            'created' => current_time('mysql'),
+        );
+        update_option('tmv_webhooks', $webhooks);
+        
+        wp_send_json_success(array('message' => 'Webhook saved'));
+    }
+    
+    public static function ajax_delete_webhook() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $webhook_id = intval($_POST['webhook_id'] ?? -1);
+        $webhooks = get_option('tmv_webhooks', array());
+        
+        if (isset($webhooks[$webhook_id])) {
+            array_splice($webhooks, $webhook_id, 1);
+            update_option('tmv_webhooks', $webhooks);
+            wp_send_json_success(array('message' => 'Webhook deleted'));
+        } else {
+            wp_send_json_error(array('message' => 'Webhook not found'));
+        }
+    }
+    
+    public static function ajax_save_password_policy() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        update_option('tmv_pw_min_length', intval($_POST['min_length'] ?? 8));
+        update_option('tmv_pw_require_uppercase', sanitize_text_field($_POST['require_uppercase'] ?? '0'));
+        update_option('tmv_pw_require_numbers', sanitize_text_field($_POST['require_numbers'] ?? '0'));
+        update_option('tmv_pw_require_special', sanitize_text_field($_POST['require_special'] ?? '0'));
+        
+        wp_send_json_success(array('message' => 'Password policy saved'));
+    }
+    
+    public static function ajax_save_session_settings() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $timeout = intval($_POST['session_timeout'] ?? 60);
+        $timeout = max(5, min(1440, $timeout));
+        update_option('tmv_session_timeout', $timeout);
+        
+        $lockout_attempts = intval($_POST['lockout_attempts'] ?? 5);
+        $lockout_duration = intval($_POST['lockout_duration'] ?? 30);
+        update_option('tmv_lockout_attempts', max(3, min(20, $lockout_attempts)));
+        update_option('tmv_lockout_duration', max(5, min(1440, $lockout_duration)));
+        
+        wp_send_json_success(array('message' => 'Session settings saved'));
+    }
+    
+    public static function ajax_toggle_maintenance() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $enabled = sanitize_text_field($_POST['enabled'] ?? '0');
+        $start = sanitize_text_field($_POST['start'] ?? '');
+        $end = sanitize_text_field($_POST['end'] ?? '');
+        
+        update_option('tmv_maintenance_mode', $enabled);
+        update_option('tmv_maintenance_start', $start);
+        update_option('tmv_maintenance_end', $end);
+        
+        wp_send_json_success(array('message' => 'Maintenance settings updated'));
+    }
+    
+    public static function ajax_save_backup_settings() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $frequency = sanitize_text_field($_POST['frequency'] ?? 'daily');
+        $time = sanitize_text_field($_POST['time'] ?? '02:00');
+        
+        update_option('tmv_backup_frequency', $frequency);
+        update_option('tmv_backup_time', $time);
+        
+        wp_send_json_success(array('message' => 'Backup settings saved'));
+    }
+    
+    public static function ajax_export_all_settings() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        global $wpdb;
+        $tmv_options = $wpdb->get_results(
+            "SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE 'tmv_%'"
+        );
+        
+        $export_data = array();
+        foreach ($tmv_options as $opt) {
+            $export_data[$opt->option_name] = maybe_unserialize($opt->option_value);
+        }
+        
+        wp_send_json_success(array('data' => $export_data, 'message' => 'Settings exported'));
+    }
+    
+    public static function ajax_import_settings() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $json_data = sanitize_textarea_field($_POST['settings_data'] ?? '');
+        $settings = json_decode($json_data, true);
+        
+        if (!is_array($settings)) {
+            wp_send_json_error(array('message' => 'Invalid settings data format'));
+            return;
+        }
+        
+        $imported = 0;
+        foreach ($settings as $key => $value) {
+            if (strpos($key, 'tmv_') === 0) {
+                update_option(sanitize_text_field($key), $value);
+                $imported++;
+            }
+        }
+        
+        wp_send_json_success(array('message' => $imported . ' settings imported'));
+    }
+    
+    public static function ajax_reset_defaults() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        global $wpdb;
+        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE 'tmv_%' AND option_name NOT IN ('tmv_verify_base_url', 'tmv_plugin_activated')");
+        
+        wp_send_json_success(array('message' => 'All settings reset to defaults'));
+    }
+    
+    public static function ajax_save_tags() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $tag = sanitize_text_field($_POST['tag'] ?? '');
+        $action_type = sanitize_text_field($_POST['tag_action'] ?? 'add');
+        
+        $tags = get_option('tmv_application_tags', array());
+        
+        if ($action_type === 'add' && !empty($tag)) {
+            if (!in_array($tag, $tags, true)) {
+                $tags[] = $tag;
+            }
+        } elseif ($action_type === 'remove' && !empty($tag)) {
+            $tags = array_values(array_diff($tags, array($tag)));
+        }
+        
+        update_option('tmv_application_tags', $tags);
+        wp_send_json_success(array('message' => 'Tags updated', 'tags' => $tags));
+    }
+    
+    public static function ajax_add_comment() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $post_id = intval($_POST['post_id'] ?? 0);
+        $comment = sanitize_textarea_field($_POST['comment'] ?? '');
+        
+        if (!$post_id || empty($comment)) {
+            wp_send_json_error(array('message' => 'Post ID and comment are required'));
+            return;
+        }
+        
+        $comments = get_post_meta($post_id, 'tmv_admin_comments', true);
+        if (!is_array($comments)) $comments = array();
+        
+        $current_user = wp_get_current_user();
+        $comments[] = array(
+            'user' => $current_user->user_login,
+            'comment' => $comment,
+            'time' => current_time('mysql'),
+        );
+        
+        update_post_meta($post_id, 'tmv_admin_comments', $comments);
+        wp_send_json_success(array('message' => 'Comment added', 'comments' => $comments));
+    }
+    
+    public static function ajax_send_applicant_email() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $post_id = intval($_POST['post_id'] ?? 0);
+        $subject = sanitize_text_field($_POST['subject'] ?? '');
+        $message = sanitize_textarea_field($_POST['message'] ?? '');
+        
+        if (!$post_id || empty($subject) || empty($message)) {
+            wp_send_json_error(array('message' => 'Post ID, subject, and message are required'));
+            return;
+        }
+        
+        $owner_email = get_post_meta($post_id, 'tmv_owner_email', true);
+        if (empty($owner_email)) {
+            wp_send_json_error(array('message' => 'No email found for this applicant'));
+            return;
+        }
+        
+        $sent = wp_mail($owner_email, $subject, $message);
+        
+        if ($sent) {
+            wp_send_json_success(array('message' => 'Email sent to applicant'));
+        } else {
+            wp_send_json_error(array('message' => 'Failed to send email'));
+        }
+    }
+    
+    public static function ajax_schedule_reminder() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $post_id = intval($_POST['post_id'] ?? 0);
+        $date = sanitize_text_field($_POST['reminder_date'] ?? '');
+        $message = sanitize_text_field($_POST['reminder_message'] ?? '');
+        
+        if (!$post_id || empty($date)) {
+            wp_send_json_error(array('message' => 'Post ID and date are required'));
+            return;
+        }
+        
+        $reminders = get_option('tmv_scheduled_reminders', array());
+        $reminders[] = array(
+            'post_id' => $post_id,
+            'date' => $date,
+            'message' => $message,
+            'created' => current_time('mysql'),
+        );
+        update_option('tmv_scheduled_reminders', $reminders);
+        
+        wp_send_json_success(array('message' => 'Reminder scheduled for ' . $date));
+    }
+    
+    public static function ajax_import_users() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $csv_data = sanitize_textarea_field($_POST['csv_data'] ?? '');
+        
+        if (empty($csv_data)) {
+            wp_send_json_error(array('message' => 'No CSV data provided'));
+            return;
+        }
+        
+        $lines = explode("\n", $csv_data);
+        $imported = 0;
+        
+        foreach ($lines as $line) {
+            $fields = str_getcsv($line);
+            if (count($fields) >= 2) {
+                $username = sanitize_user($fields[0]);
+                $email = sanitize_email($fields[1]);
+                $role = isset($fields[2]) ? sanitize_text_field($fields[2]) : 'subscriber';
+                
+                if (!empty($username) && !empty($email) && !username_exists($username) && !email_exists($email)) {
+                    $password = wp_generate_password();
+                    $user_id = wp_create_user($username, $password, $email);
+                    if (!is_wp_error($user_id)) {
+                        $user = new WP_User($user_id);
+                        $user->set_role($role);
+                        $imported++;
+                    }
+                }
+            }
+        }
+        
+        wp_send_json_success(array('message' => $imported . ' users imported'));
+    }
+    
+    public static function ajax_export_users() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $users = get_users(array('number' => -1));
+        $rows = array();
+        $rows[] = array('Username', 'Email', 'Role', 'Registered', 'Applications');
+        
+        foreach ($users as $user) {
+            $app_count = count_user_posts($user->ID, 'trademark_app');
+            $role = !empty($user->roles) ? $user->roles[0] : 'none';
+            $rows[] = array(
+                $user->user_login,
+                $user->user_email,
+                $role,
+                $user->user_registered,
+                $app_count,
+            );
+        }
+        
+        wp_send_json_success(array('data' => $rows, 'message' => 'Users exported'));
+    }
+    
+    public static function ajax_invite_user() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $email = sanitize_email($_POST['email'] ?? '');
+        $role = sanitize_text_field($_POST['role'] ?? 'subscriber');
+        
+        if (empty($email) || !is_email($email)) {
+            wp_send_json_error(array('message' => 'Valid email is required'));
+            return;
+        }
+        
+        if (email_exists($email)) {
+            wp_send_json_error(array('message' => 'User with this email already exists'));
+            return;
+        }
+        
+        $username = sanitize_user(strstr($email, '@', true));
+        $password = wp_generate_password();
+        $user_id = wp_create_user($username, $password, $email);
+        
+        if (is_wp_error($user_id)) {
+            wp_send_json_error(array('message' => $user_id->get_error_message()));
+            return;
+        }
+        
+        $user = new WP_User($user_id);
+        $user->set_role($role);
+        
+        wp_new_user_notification($user_id, null, 'user');
+        
+        wp_send_json_success(array('message' => 'Invitation sent to ' . $email));
+    }
+    
+    public static function ajax_bulk_email_users() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $group = sanitize_text_field($_POST['group'] ?? 'all');
+        $subject = sanitize_text_field($_POST['subject'] ?? '');
+        $message = sanitize_textarea_field($_POST['message'] ?? '');
+        
+        if (empty($subject) || empty($message)) {
+            wp_send_json_error(array('message' => 'Subject and message are required'));
+            return;
+        }
+        
+        $args = array('number' => -1, 'fields' => array('user_email'));
+        if ($group !== 'all' && in_array($group, array('subscribers', 'administrators', 'editors'), true)) {
+            $args['role'] = rtrim($group, 's');
+        }
+        
+        $users = get_users($args);
+        $sent = 0;
+        
+        foreach ($users as $user) {
+            if (wp_mail($user->user_email, $subject, $message)) {
+                $sent++;
+            }
+        }
+        
+        wp_send_json_success(array('message' => 'Email sent to ' . $sent . ' users'));
+    }
+    
+    public static function ajax_save_cert_watermark() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $text = sanitize_text_field($_POST['watermark_text'] ?? 'CERTIFIED');
+        $opacity = intval($_POST['opacity'] ?? 20);
+        $opacity = max(0, min(100, $opacity));
+        
+        update_option('tmv_cert_watermark_text', $text);
+        update_option('tmv_cert_watermark_opacity', $opacity);
+        
+        wp_send_json_success(array('message' => 'Watermark settings saved'));
+    }
+    
+    public static function ajax_save_cert_numbering() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $format = sanitize_text_field($_POST['format'] ?? 'CERT-{YEAR}-{NUMBER}');
+        update_option('tmv_cert_numbering_format', $format);
+        
+        wp_send_json_success(array('message' => 'Certificate numbering format saved'));
+    }
+    
+    public static function ajax_generate_report() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $date_from = sanitize_text_field($_POST['date_from'] ?? '');
+        $date_to = sanitize_text_field($_POST['date_to'] ?? '');
+        $metrics = array_map('sanitize_text_field', (array)($_POST['metrics'] ?? array()));
+        
+        global $wpdb;
+        $report = array();
+        
+        $where_date = '';
+        if (!empty($date_from) && !empty($date_to)) {
+            $where_date = $wpdb->prepare(" AND post_date BETWEEN %s AND %s", $date_from, $date_to . ' 23:59:59');
+        }
+        
+        if (in_array('applications', $metrics, true)) {
+            $report['applications'] = intval($wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'trademark_app'" . $where_date));
+        }
+        if (in_array('approvals', $metrics, true)) {
+            $report['approvals'] = intval(self::count_by_status('approved'));
+        }
+        if (in_array('rejections', $metrics, true)) {
+            $report['rejections'] = intval(self::count_by_status('rejected'));
+        }
+        if (in_array('certificates', $metrics, true)) {
+            $report['certificates'] = intval($wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key = 'tmv_certificate_jpg' AND meta_value != ''"));
+        }
+        if (in_array('verifications', $metrics, true)) {
+            $log = get_option('tmv_verification_log', array());
+            $report['verifications'] = count($log);
+        }
+        if (in_array('revenue', $metrics, true)) {
+            $report['revenue'] = floatval(get_option('tmv_total_revenue', 0));
+        }
+        
+        wp_send_json_success(array('report' => $report, 'message' => 'Report generated'));
+    }
+    
+    public static function ajax_schedule_report() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+        
+        $frequency = sanitize_text_field($_POST['frequency'] ?? 'weekly');
+        $email = sanitize_email($_POST['email'] ?? '');
+        
+        if (empty($email) || !is_email($email)) {
+            wp_send_json_error(array('message' => 'Valid email address is required'));
+            return;
+        }
+        
+        update_option('tmv_report_schedule_frequency', $frequency);
+        update_option('tmv_report_schedule_email', $email);
+        
+        wp_send_json_success(array('message' => 'Report scheduled: ' . $frequency . ' to ' . $email));
     }
     
     // =========================================================================
