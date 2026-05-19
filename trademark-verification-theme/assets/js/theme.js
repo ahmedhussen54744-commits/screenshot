@@ -193,6 +193,81 @@
             videoObserver.observe(video);
         });
 
+        // ===== Reading Progress Bar (Single Post) =====
+        var progressBar = document.getElementById('tmv-reading-progress-bar');
+        var singleContent = document.getElementById('tmv-single-content');
+
+        if (progressBar && singleContent) {
+            window.addEventListener('scroll', function() {
+                var contentRect = singleContent.getBoundingClientRect();
+                var contentTop = singleContent.offsetTop;
+                var contentHeight = singleContent.offsetHeight;
+                var windowHeight = window.innerHeight;
+                var scrollY = window.scrollY || window.pageYOffset;
+
+                var start = contentTop - windowHeight;
+                var end = contentTop + contentHeight;
+                var progress = 0;
+
+                if (scrollY <= start) {
+                    progress = 0;
+                } else if (scrollY >= end) {
+                    progress = 100;
+                } else {
+                    progress = ((scrollY - start) / (end - start)) * 100;
+                }
+
+                progressBar.style.width = Math.min(100, Math.max(0, progress)) + '%';
+            });
+        }
+
+        // ===== Copy Link to Clipboard (Share Button) =====
+        $(document).on('click', '.tmv-share-btn--copy', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var url = $btn.data('url') || window.location.href;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(function() {
+                    $btn.addClass('copied');
+                    setTimeout(function() {
+                        $btn.removeClass('copied');
+                    }, 2000);
+                });
+            } else {
+                // Fallback for older browsers
+                var tempInput = document.createElement('input');
+                tempInput.value = url;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                $btn.addClass('copied');
+                setTimeout(function() {
+                    $btn.removeClass('copied');
+                }, 2000);
+            }
+        });
+
+        // ===== Lazy Loading for Post Images =====
+        var imgObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    var img = entry.target;
+                    if (img.dataset.src) {
+                        img.src = img.dataset.src;
+                        img.removeAttribute('data-src');
+                    }
+                    img.classList.add('tmv-img-loaded');
+                    imgObserver.unobserve(img);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.tmv-post-card img[data-src]').forEach(function(img) {
+            imgObserver.observe(img);
+        });
+
         // ===== Staggered Reveal for Grid Items =====
         var gridSelectors = '.tmv-form-grid > *, .tmv-details-grid > *, .tmv-features-grid > *, .tmv-news-grid > *';
         var gridItems = document.querySelectorAll(gridSelectors);
