@@ -141,6 +141,7 @@ function tmv_activate_plugin() {
         'tmv_csp_enabled' => '0',
         'tmv_csp_policy' => '',
         'tmv_single_session' => '0',
+        'tmv_auto_blacklist_permanent' => '0',
     );
 
     foreach ($extended_defaults as $key => $value) {

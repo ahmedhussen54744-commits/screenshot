@@ -10,6 +10,7 @@ class TMV_Security {
         add_action('wp_head', array(__CLASS__, 'add_security_meta'));
         add_filter('rest_authentication_errors', array(__CLASS__, 'restrict_rest_api'));
         add_action('login_failed', array(__CLASS__, 'log_failed_login'));
+        add_filter('authenticate', array(__CLASS__, 'check_lockout_transient'), 30, 1);
         add_filter('xmlrpc_enabled', '__return_false');
         add_filter('wp_headers', array(__CLASS__, 'security_headers'));
         add_action('init', array(__CLASS__, 'enforce_single_session'));
@@ -177,13 +178,19 @@ class TMV_Security {
         });
         $attempt_count = count($ip_attempts_24h);
 
-        // 5 attempts = 1 hour block
+        // 15 attempts = permanent or 7-day block depending on setting
         if ($attempt_count >= 15) {
-            // Permanent block until admin unlock
-            $blacklist = get_option('tmv_ip_blacklist', array());
-            if (!in_array($ip, $blacklist, true)) {
-                $blacklist[] = $ip;
-                update_option('tmv_ip_blacklist', $blacklist);
+            $use_permanent = get_option('tmv_auto_blacklist_permanent', '0');
+            if ($use_permanent === '1') {
+                // Permanent block until admin removes from blacklist
+                $blacklist = get_option('tmv_ip_blacklist', array());
+                if (!in_array($ip, $blacklist, true)) {
+                    $blacklist[] = $ip;
+                    update_option('tmv_ip_blacklist', $blacklist);
+                }
+            } else {
+                // 7-day block via transient (default behavior)
+                set_transient('tmv_blocked_' . md5($ip), true, 604800);
             }
         } elseif ($attempt_count >= 10) {
             // 24 hour block
@@ -192,6 +199,24 @@ class TMV_Security {
             // 1 hour block
             set_transient('tmv_blocked_' . md5($ip), true, 3600);
         }
+    }
+
+    /**
+     * Check the lockout transient before allowing authentication.
+     * This enforces the 5-attempt and 10-attempt lockout tiers.
+     */
+    public static function check_lockout_transient($user) {
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $transient_key = 'tmv_blocked_' . md5($ip);
+
+        if (get_transient($transient_key)) {
+            return new WP_Error(
+                'tmv_ip_locked',
+                'Your IP address has been temporarily locked due to too many failed login attempts. Please try again later.'
+            );
+        }
+
+        return $user;
     }
     
     public static function security_headers($headers) {

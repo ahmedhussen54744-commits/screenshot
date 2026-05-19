@@ -748,7 +748,8 @@ class TMV_Admin_Extended {
         update_option('tmv_primary_color', sanitize_hex_color($_POST['primary_color'] ?? '#1d4ed8'));
         update_option('tmv_accent_color', sanitize_hex_color($_POST['accent_color'] ?? '#10b981'));
         update_option('tmv_dark_mode', sanitize_text_field($_POST['dark_mode'] ?? '0'));
-        update_option('tmv_custom_css', wp_strip_all_tags($_POST['custom_css'] ?? ''));
+        // Use sanitize_textarea_field instead of wp_strip_all_tags to preserve CSS selectors like > and []
+        update_option('tmv_custom_css', sanitize_textarea_field($_POST['custom_css'] ?? ''));
         update_option('tmv_header_style', sanitize_text_field($_POST['header_style'] ?? 'solid'));
         update_option('tmv_font_family', sanitize_text_field($_POST['font_family'] ?? 'Inter'));
         update_option('tmv_animation_enabled', sanitize_text_field($_POST['animation_enabled'] ?? '1'));
@@ -866,7 +867,9 @@ class TMV_Admin_Extended {
         update_option('tmv_robots_meta', sanitize_text_field($_POST['robots_meta'] ?? 'index'));
         update_option('tmv_social_preview_title', sanitize_text_field($_POST['social_title'] ?? ''));
         update_option('tmv_social_preview_description', sanitize_textarea_field($_POST['social_desc'] ?? ''));
-        update_option('tmv_analytics_tracking_code', wp_strip_all_tags($_POST['analytics_code'] ?? ''));
+        // Analytics tracking code is intentionally stored unfiltered because it contains script tags
+        // (e.g. Google Analytics snippets). Only administrators with manage_options can set this value.
+        update_option('tmv_analytics_tracking_code', wp_unslash($_POST['analytics_code'] ?? ''));
 
         wp_send_json_success(array('message' => 'SEO settings saved'));
     }
@@ -919,14 +922,36 @@ class TMV_Admin_Extended {
             return;
         }
 
+        // Allowlist of importable option keys - excludes security-critical options
+        $blocked_keys = array(
+            'tmv_ip_blacklist',
+            'tmv_ip_whitelist',
+            'tmv_csp_policy',
+            'tmv_csp_enabled',
+            'tmv_security_key',
+            'tmv_failed_logins',
+            'tmv_audit_trail',
+            'tmv_analytics_tracking_code',
+            'tmv_auto_blacklist_permanent',
+        );
+
         $count = 0;
+        $skipped = 0;
         foreach ($data as $key => $value) {
             if (strpos($key, 'tmv_') === 0) {
+                if (in_array($key, $blocked_keys, true)) {
+                    $skipped++;
+                    continue;
+                }
                 update_option($key, $value);
                 $count++;
             }
         }
 
-        wp_send_json_success(array('message' => $count . ' settings imported successfully'));
+        $msg = $count . ' settings imported successfully';
+        if ($skipped > 0) {
+            $msg .= ' (' . $skipped . ' security-sensitive keys skipped)';
+        }
+        wp_send_json_success(array('message' => $msg));
     }
 }

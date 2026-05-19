@@ -592,6 +592,25 @@
         });
     });
 
+    // Auto-blacklist permanent toggle
+    $(document).on('change', '#tmv-auto-blacklist-permanent', function() {
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_save_security_option',
+                nonce: tmvAdmin.nonce,
+                option_key: 'tmv_auto_blacklist_permanent',
+                option_value: $(this).is(':checked') ? '1' : '0'
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Saved silently
+                }
+            }
+        });
+    });
+
     // =========================================================================
     // FAQ MANAGEMENT
     // =========================================================================
@@ -875,21 +894,23 @@
             },
             success: function(response) {
                 if (response.success) {
-                    var html = '<p><strong>Type:</strong> ' + response.data.report_type + '</p>';
-                    html += '<p><strong>Records:</strong> ' + response.data.count + '</p>';
+                    var $container = $('#tmv-report-content').empty();
+                    $container.append($('<p>').html('<strong>Type:</strong> ').append($('<span>').text(response.data.report_type)));
+                    $container.append($('<p>').html('<strong>Records:</strong> ').append($('<span>').text(response.data.count)));
                     if (response.data.data && response.data.data.length > 0) {
-                        html += '<table class="tmv-data-table"><thead><tr>';
+                        var $table = $('<table class="tmv-data-table">');
+                        var $thead = $('<thead>').appendTo($table);
+                        var $headRow = $('<tr>').appendTo($thead);
                         var keys = Object.keys(response.data.data[0]);
-                        keys.forEach(function(k) { html += '<th>' + k + '</th>'; });
-                        html += '</tr></thead><tbody>';
+                        keys.forEach(function(k) { $('<th>').text(k).appendTo($headRow); });
+                        var $tbody = $('<tbody>').appendTo($table);
                         response.data.data.slice(0, 20).forEach(function(row) {
-                            html += '<tr>';
-                            keys.forEach(function(k) { html += '<td>' + (row[k] || '') + '</td>'; });
-                            html += '</tr>';
+                            var $tr = $('<tr>').appendTo($tbody);
+                            keys.forEach(function(k) { $('<td>').text(row[k] || '').appendTo($tr); });
                         });
-                        html += '</tbody></table>';
+                        $container.append($table);
                     }
-                    $('#tmv-report-output').show().find('#tmv-report-content').html(html);
+                    $('#tmv-report-output').show();
                 }
             },
             complete: function() {
