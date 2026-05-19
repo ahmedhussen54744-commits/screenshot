@@ -1467,3 +1467,93 @@ img {
         max-height: 200px;
     }
 }
+
+/* ===== COPYRIGHT WATERMARK OVERLAY ===== */
+.tmv-copyright-watermark {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+    opacity: 0.03;
+}
+
+.tmv-copyright-watermark-text {
+    position: absolute;
+    white-space: nowrap;
+    font-size: 24px;
+    color: #1a5c3a;
+    transform: rotate(-45deg);
+    font-weight: bold;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+}
+
+/* ===== ANTI-SELECT FOR PROTECTED CONTENT ===== */
+.tmv-protected,
+.tmv-verify-result,
+.tmv-certificate-display {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* ===== DISABLE IMAGE DRAGGING ===== */
+img {
+    -webkit-user-drag: none;
+    user-drag: none;
+    -webkit-touch-callout: none;
+}
+
+/* ===== PRINT PROTECTION ===== */
+@media print {
+    body {
+        display: none !important;
+    }
+    body::after {
+        content: "Printing is not allowed. This content is protected by copyright.";
+        display: block;
+        font-size: 24px;
+        text-align: center;
+        padding: 100px;
+    }
+}
+
+.tmv-no-print { }
+@media print {
+    .tmv-no-print {
+        display: none !important;
+    }
+}
+
+/* ===== FOOTER LEGAL SECTION ===== */
+.tmv-footer-legal {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tmv-footer-legal-text {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto 8px;
+}
+
+.tmv-footer-legal-notice {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+}
+
+/* ===== NOSCRIPT WARNING ===== */
+.tmv-noscript-warning {
+    display: none;
+}

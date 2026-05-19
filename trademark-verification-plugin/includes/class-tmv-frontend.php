@@ -29,6 +29,7 @@ class TMV_Frontend {
                 <form id="tmv-application-form" method="post" enctype="multipart/form-data" class="tmv-form">
                     <input type="hidden" name="action" value="tmv_submit_application" />
                     <input type="hidden" name="tmv_nonce" value="<?php echo wp_create_nonce('tmv_submit_app'); ?>" />
+                    <?php echo TMV_Security::render_honeypot(); ?>
                     
                     <div class="tmv-form-grid">
                         <div class="tmv-field-group tmv-full-width">
@@ -152,6 +153,7 @@ class TMV_Frontend {
                     <form id="tmv-verify-form" class="tmv-verify-search" method="post">
                         <input type="hidden" name="action" value="tmv_verify_trademark" />
                         <input type="hidden" name="tmv_nonce" value="<?php echo wp_create_nonce('tmv_verify_nonce'); ?>" />
+                        <?php echo TMV_Security::render_honeypot(); ?>
                         <div class="tmv-search-wrapper">
                             <input type="text" name="tmv_search_code" id="tmv-search-input" class="tmv-search-input" placeholder="Enter TM Number or Verification Code" required maxlength="20" autocomplete="off" />
                             <button type="submit" class="tmv-search-btn tmv-3d-btn">
@@ -275,6 +277,11 @@ class TMV_Frontend {
             wp_send_json_error(array('message' => 'Security check failed'));
         }
         
+        // Honeypot check
+        if (TMV_Security::check_honeypot()) {
+            wp_send_json_error(array('message' => 'Request blocked'));
+        }
+        
         // Rate limiting
         $ip = $_SERVER['REMOTE_ADDR'];
         $transient_key = 'tmv_rate_' . md5($ip);
@@ -367,6 +374,11 @@ class TMV_Frontend {
     public static function verify_trademark() {
         if (!wp_verify_nonce($_POST['tmv_nonce'], 'tmv_verify_nonce')) {
             wp_send_json_error(array('message' => 'Security check failed'));
+        }
+        
+        // Honeypot check
+        if (TMV_Security::check_honeypot()) {
+            wp_send_json_error(array('message' => 'Request blocked'));
         }
         
         $search = sanitize_text_field($_POST['tmv_search_code'] ?? '');

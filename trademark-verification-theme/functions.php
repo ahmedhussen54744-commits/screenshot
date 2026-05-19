@@ -138,8 +138,29 @@ function tmv_widgets_init() {
 // Security: Remove WP version
 remove_action('wp_head', 'wp_generator');
 
+// Remove version from RSS generator
+add_filter('the_generator', '__return_empty_string');
+
 // Disable XML-RPC
 add_filter('xmlrpc_enabled', '__return_false');
+
+// Copyright and security meta tags in wp_head
+add_action('wp_head', 'tmv_theme_copyright_meta', 1);
+function tmv_theme_copyright_meta() {
+    echo '<meta name="copyright" content="(c) 2026 DPDT Registry Cloud Interface. All Rights Reserved." />' . "\n";
+    echo '<meta name="author" content="DPDT Registry Cloud Interface" />' . "\n";
+    echo '<meta name="rights" content="All Rights Reserved" />' . "\n";
+}
+
+// No-cache headers for login/register/dashboard pages
+add_action('template_redirect', 'tmv_sensitive_page_no_cache');
+function tmv_sensitive_page_no_cache() {
+    if (is_page(array('login', 'register', 'dashboard', 'password-reset'))) {
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Expires: Thu, 01 Jan 1970 00:00:00 GMT');
+    }
+}
 
 // Custom excerpt length
 add_filter('excerpt_length', function() { return 25; });

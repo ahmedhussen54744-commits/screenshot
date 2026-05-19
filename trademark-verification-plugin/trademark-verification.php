@@ -21,15 +21,47 @@ define('TMV_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TMV_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('TMV_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
-// Security Headers
+// Security Headers - Enhanced
 add_action('send_headers', function() {
     if (!is_admin()) {
         header('X-Content-Type-Options: nosniff');
-        header('X-Frame-Options: SAMEORIGIN');
+        header('X-Frame-Options: DENY');
         header('X-XSS-Protection: 1; mode=block');
         header('Referrer-Policy: strict-origin-when-cross-origin');
-        header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+        header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
+        header('Cross-Origin-Opener-Policy: same-origin');
+        header('Cross-Origin-Resource-Policy: same-origin');
+        header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' cdnjs.cloudflare.com cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none';");
+        header_remove('X-Powered-By');
     }
+});
+
+// Remove WP version from all generator locations
+add_filter('the_generator', '__return_empty_string');
+add_filter('style_loader_src', 'tmv_remove_version_query', 10, 2);
+add_filter('script_loader_src', 'tmv_remove_version_query', 10, 2);
+
+/**
+ * Remove version query string from frontend scripts/styles
+ */
+function tmv_remove_version_query($src, $handle = '') {
+    if (is_admin()) {
+        return $src;
+    }
+    if (strpos($src, '?ver=') !== false) {
+        $src = remove_query_arg('ver', $src);
+    }
+    return $src;
+}
+
+// Remove generator from RSS feeds
+add_action('init', function() {
+    remove_action('rss2_head', 'the_generator');
+    remove_action('commentsrss2_head', 'the_generator');
+    remove_action('rss_head', 'the_generator');
+    remove_action('atom_head', 'the_generator');
+    remove_action('rdf_header', 'the_generator');
 });
 
 // Include files
