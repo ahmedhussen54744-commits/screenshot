@@ -54,16 +54,60 @@
     
     <!-- Latest News Section -->
     <section class="tmv-news-section">
-        <h2 class="tmv-section-title">Latest News &amp; Updates</h2>
-        <div class="tmv-news-grid">
+        <div class="tmv-section-header">
+            <h2 class="tmv-section-title">Latest News &amp; Updates</h2>
+            <p class="tmv-section-subtitle">Stay informed with the latest trademark news and system updates</p>
+        </div>
+        <div class="tmv-news-grid tmv-news-grid--featured">
             <?php
             $news_query = new WP_Query(array(
                 'post_type' => 'post',
                 'posts_per_page' => 6,
                 'post_status' => 'publish',
             ));
+            $post_index = 0;
             while ($news_query->have_posts()) : $news_query->the_post();
-                get_template_part('template-parts/content', 'post');
+                if ($post_index === 0) : ?>
+                    <!-- Featured First Post -->
+                    <article class="tmv-post-card tmv-post-card--featured">
+                        <div class="tmv-post-thumbnail">
+                            <?php if (has_post_thumbnail()) : ?>
+                                <?php the_post_thumbnail('large'); ?>
+                                <div class="tmv-post-thumbnail-overlay"></div>
+                            <?php endif; ?>
+                            <div class="tmv-date-badge">
+                                <span class="tmv-date-badge__day"><?php echo get_the_date('d'); ?></span>
+                                <span class="tmv-date-badge__month"><?php echo get_the_date('M'); ?></span>
+                            </div>
+                            <?php
+                            $categories = get_the_category();
+                            if (!empty($categories)) : ?>
+                                <span class="tmv-category-ribbon"><?php echo esc_html($categories[0]->name); ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="tmv-post-content">
+                            <div class="tmv-post-meta">
+                                <span class="tmv-post-author">
+                                    <?php echo get_avatar(get_the_author_meta('ID'), 24); ?>
+                                    <?php the_author(); ?>
+                                </span>
+                                <span class="tmv-post-reading-time">
+                                    <?php
+                                    $word_count = str_word_count(strip_tags(get_the_content()));
+                                    $reading_time = max(1, ceil($word_count / 200));
+                                    echo esc_html($reading_time) . ' min read';
+                                    ?>
+                                </span>
+                            </div>
+                            <h3 class="tmv-post-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+                            <p class="tmv-post-excerpt"><?php echo wp_trim_words(get_the_excerpt(), 40, '...'); ?></p>
+                            <a href="<?php the_permalink(); ?>" class="tmv-read-more">Read Full Article &rarr;</a>
+                        </div>
+                    </article>
+                <?php else :
+                    get_template_part('template-parts/content', 'post');
+                endif;
+                $post_index++;
             endwhile;
             wp_reset_postdata();
             ?>

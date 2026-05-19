@@ -1,6 +1,7 @@
 <?php
 /**
  * Archive Template - Category, Tag, and Blog listings
+ * Enhanced with post count, category description, and improved grid
  */
 get_header();
 ?>
@@ -12,14 +13,35 @@ get_header();
             if (is_category()) {
                 single_cat_title();
             } elseif (is_tag()) {
-                single_tag_title();
+                printf('Tag: %s', single_tag_title('', false));
             } elseif (is_author()) {
                 the_author();
+            } elseif (is_date()) {
+                if (is_year()) {
+                    echo get_the_date('Y');
+                } elseif (is_month()) {
+                    echo get_the_date('F Y');
+                } elseif (is_day()) {
+                    echo get_the_date('F j, Y');
+                }
             } else {
                 echo 'Blog';
             }
             ?>
         </h1>
+        <?php
+        global $wp_query;
+        $total_posts = $wp_query->found_posts;
+        ?>
+        <p class="tmv-archive-count"><?php echo esc_html($total_posts); ?> <?php echo ($total_posts === 1) ? 'article' : 'articles'; ?> found</p>
+        <?php
+        if (is_category()) {
+            $cat_description = category_description();
+            if ($cat_description) : ?>
+                <div class="tmv-archive-description"><?php echo $cat_description; ?></div>
+            <?php endif;
+        }
+        ?>
     </div>
 
     <div class="tmv-archive-grid">

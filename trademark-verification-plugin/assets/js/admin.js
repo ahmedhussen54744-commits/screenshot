@@ -592,6 +592,25 @@
         });
     });
 
+    // Auto-blacklist permanent toggle
+    $(document).on('change', '#tmv-auto-blacklist-permanent', function() {
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_save_security_option',
+                nonce: tmvAdmin.nonce,
+                option_key: 'tmv_auto_blacklist_permanent',
+                option_value: $(this).is(':checked') ? '1' : '0'
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Saved silently
+                }
+            }
+        });
+    });
+
     // =========================================================================
     // FAQ MANAGEMENT
     // =========================================================================
@@ -738,6 +757,429 @@
                 }
             }
         });
+    });
+
+
+
+    // =========================================================================
+    // EXTENDED SETTINGS TAB
+    // =========================================================================
+
+    // Range slider updates
+    $(document).on('input', '#tmv-qr-size-slider', function() {
+        $('#tmv-qr-size-value').text($(this).val() + 'px');
+    });
+
+    $(document).on('input', '#tmv-watermark-opacity', function() {
+        $('#tmv-watermark-opacity-value').text($(this).val() + '%');
+    });
+
+    $(document).on('input', '#tmv-card-border-radius', function() {
+        $('#tmv-border-radius-value').text($(this).val() + 'px');
+    });
+
+    // Color picker change events
+    $(document).on('input', '.tmv-color-picker', function() {
+        $(this).siblings('.tmv-color-value').text($(this).val());
+    });
+
+    // Save Extended Settings
+    $(document).on('click', '#tmv-save-extended-settings-btn', function() {
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Saving...');
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_save_extended_settings',
+                nonce: tmvAdmin.nonce,
+                site_mode: $('#tmv-site-mode').is(':checked') ? 'maintenance' : 'live',
+                registration_open: $('#tmv-registration-open').is(':checked') ? '1' : '0',
+                default_role: $('#tmv-default-role').val(),
+                max_upload: $('#tmv-max-upload').val(),
+                allowed_types: $('#tmv-allowed-types').val(),
+                auto_approve: $('#tmv-auto-approve').is(':checked') ? '1' : '0',
+                cert_validity: $('#tmv-cert-validity').val(),
+                qr_size: $('#tmv-qr-size-slider').val(),
+                watermark_text: $('#tmv-watermark-text').val(),
+                watermark_opacity: $('#tmv-watermark-opacity').val(),
+                footer_text: $('#tmv-footer-text').val(),
+                timezone: $('#tmv-timezone').val(),
+                date_format: $('#tmv-date-format').val(),
+                app_prefix: $('#tmv-app-prefix').val(),
+                require_email_verify: $('#tmv-require-email-verify').is(':checked') ? '1' : '0'
+            },
+            success: function(response) {
+                if (response.success) alert('Extended settings saved!');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Save Extended Settings');
+            }
+        });
+    });
+
+    // Save Appearance
+    $(document).on('click', '#tmv-save-appearance-btn', function() {
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Saving...');
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_save_appearance',
+                nonce: tmvAdmin.nonce,
+                primary_color: $('#tmv-primary-color').val(),
+                accent_color: $('#tmv-accent-color').val(),
+                dark_mode: $('#tmv-dark-mode').is(':checked') ? '1' : '0',
+                custom_css: $('#tmv-custom-css').val(),
+                header_style: $('input[name="tmv_header_style"]:checked').val(),
+                font_family: $('#tmv-font-family').val(),
+                animation_enabled: $('#tmv-animation-enabled').is(':checked') ? '1' : '0',
+                logo_max_width: $('#tmv-logo-max-width').val(),
+                card_border_radius: $('#tmv-card-border-radius').val(),
+                shadow_intensity: $('#tmv-shadow-intensity').val()
+            },
+            success: function(response) {
+                if (response.success) alert('Appearance settings saved!');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Save Appearance');
+            }
+        });
+    });
+
+    // Save Notifications
+    $(document).on('click', '#tmv-save-notifications-btn', function() {
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Saving...');
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_save_notifications',
+                nonce: tmvAdmin.nonce,
+                notify_new_app: $('#tmv-notify-new-app').is(':checked') ? '1' : '0',
+                notify_approval: $('#tmv-notify-approval').is(':checked') ? '1' : '0',
+                notify_rejection: $('#tmv-notify-rejection').is(':checked') ? '1' : '0',
+                admin_recipients: $('#tmv-admin-recipients').val(),
+                digest_frequency: $('#tmv-digest-frequency').val(),
+                slack_webhook: $('#tmv-slack-webhook').val(),
+                notification_sound: $('#tmv-notification-sound').is(':checked') ? '1' : '0',
+                sms_notifications: $('#tmv-sms-notifications').is(':checked') ? '1' : '0',
+                push_notifications: $('#tmv-push-notifications').is(':checked') ? '1' : '0',
+                auto_reminder_days: $('#tmv-auto-reminder-days').val()
+            },
+            success: function(response) {
+                if (response.success) alert('Notification settings saved!');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Save Notifications');
+            }
+        });
+    });
+
+    // Generate Report
+    $(document).on('click', '#tmv-generate-report-btn', function() {
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Generating...');
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_generate_report',
+                nonce: tmvAdmin.nonce,
+                report_type: $('#tmv-report-type').val(),
+                date_from: $('#tmv-report-date-from').val(),
+                date_to: $('#tmv-report-date-to').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    var $container = $('#tmv-report-content').empty();
+                    $container.append($('<p>').html('<strong>Type:</strong> ').append($('<span>').text(response.data.report_type)));
+                    $container.append($('<p>').html('<strong>Records:</strong> ').append($('<span>').text(response.data.count)));
+                    if (response.data.data && response.data.data.length > 0) {
+                        var $table = $('<table class="tmv-data-table">');
+                        var $thead = $('<thead>').appendTo($table);
+                        var $headRow = $('<tr>').appendTo($thead);
+                        var keys = Object.keys(response.data.data[0]);
+                        keys.forEach(function(k) { $('<th>').text(k).appendTo($headRow); });
+                        var $tbody = $('<tbody>').appendTo($table);
+                        response.data.data.slice(0, 20).forEach(function(row) {
+                            var $tr = $('<tr>').appendTo($tbody);
+                            keys.forEach(function(k) { $('<td>').text(row[k] || '').appendTo($tr); });
+                        });
+                        $container.append($table);
+                    }
+                    $('#tmv-report-output').show();
+                }
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Generate Report');
+            }
+        });
+    });
+
+    // Export CSV Report
+    $(document).on('click', '#tmv-export-csv-report-btn', function() {
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_generate_report',
+                nonce: tmvAdmin.nonce,
+                report_type: $('#tmv-report-type').val(),
+                date_from: $('#tmv-report-date-from').val(),
+                date_to: $('#tmv-report-date-to').val()
+            },
+            success: function(response) {
+                if (response.success && response.data.data) {
+                    var csv = '';
+                    if (response.data.data.length > 0) {
+                        csv += Object.keys(response.data.data[0]).join(',') + '
+';
+                        response.data.data.forEach(function(row) {
+                            csv += Object.values(row).map(function(v) {
+                                return '"' + (v || '').toString().replace(/"/g, '""') + '"';
+                            }).join(',') + '
+';
+                        });
+                    }
+                    var blob = new Blob([csv], { type: 'text/csv' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'tmv-report-' + new Date().toISOString().slice(0, 10) + '.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+            }
+        });
+    });
+
+    // Export JSON Report
+    $(document).on('click', '#tmv-export-json-report-btn', function() {
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_generate_report',
+                nonce: tmvAdmin.nonce,
+                report_type: $('#tmv-report-type').val(),
+                date_from: $('#tmv-report-date-from').val(),
+                date_to: $('#tmv-report-date-to').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    var blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'tmv-report-' + new Date().toISOString().slice(0, 10) + '.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+            }
+        });
+    });
+
+    // Save Workflow
+    $(document).on('click', '#tmv-save-workflow-btn', function() {
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Saving...');
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_save_workflow',
+                nonce: tmvAdmin.nonce,
+                auto_assign: $('#tmv-auto-assign').is(':checked') ? '1' : '0',
+                default_reviewer: $('#tmv-default-reviewer').val(),
+                escalation_days: $('#tmv-escalation-days').val(),
+                sla_warning: $('#tmv-sla-warning').val(),
+                auto_archive: $('#tmv-auto-archive').val(),
+                reminder_frequency: $('#tmv-reminder-frequency').val(),
+                duplicate_detection: $('#tmv-duplicate-detection').is(':checked') ? '1' : '0',
+                auto_merge: $('#tmv-auto-merge').is(':checked') ? '1' : '0',
+                priority_levels: $('#tmv-priority-levels').val(),
+                required_fields: $('#tmv-required-fields').val()
+            },
+            success: function(response) {
+                if (response.success) alert('Workflow settings saved!');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Save Workflow');
+            }
+        });
+    });
+
+    // Save SEO
+    $(document).on('click', '#tmv-save-seo-btn', function() {
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Saving...');
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_save_seo',
+                nonce: tmvAdmin.nonce,
+                meta_title: $('#tmv-meta-title').val(),
+                meta_desc: $('#tmv-meta-desc').val(),
+                og_image: $('#tmv-og-image').val(),
+                sitemap_toggle: $('#tmv-sitemap-toggle').is(':checked') ? '1' : '0',
+                structured_data: $('#tmv-structured-data').is(':checked') ? '1' : '0',
+                canonical_base: $('#tmv-canonical-base').val(),
+                robots_meta: $('#tmv-robots-meta').val(),
+                social_title: $('#tmv-social-title').val(),
+                social_desc: $('#tmv-social-desc').val(),
+                analytics_code: $('#tmv-analytics-code').val()
+            },
+            success: function(response) {
+                if (response.success) alert('SEO settings saved!');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Save SEO Settings');
+            }
+        });
+    });
+
+    // Save Copyright
+    $(document).on('click', '#tmv-save-copyright-btn', function() {
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Saving...');
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_save_copyright',
+                nonce: tmvAdmin.nonce,
+                disable_rightclick: $('#tmv-disable-rightclick').is(':checked') ? '1' : '0',
+                disable_selection: $('#tmv-disable-selection').is(':checked') ? '1' : '0',
+                disable_print: $('#tmv-disable-print').is(':checked') ? '1' : '0',
+                disable_devtools: $('#tmv-disable-devtools').is(':checked') ? '1' : '0',
+                watermark_text: $('#tmv-copyright-watermark').val(),
+                watermark_position: $('#tmv-watermark-position').val(),
+                hotlink_protection: $('#tmv-hotlink-protection').is(':checked') ? '1' : '0',
+                image_overlay: $('#tmv-image-overlay').is(':checked') ? '1' : '0',
+                dmca_notice: $('#tmv-dmca-notice').val(),
+                copyright_footer: $('#tmv-copyright-footer').val(),
+                disable_drag: $('#tmv-disable-drag').is(':checked') ? '1' : '0',
+                disable_screenshot: $('#tmv-disable-screenshot').is(':checked') ? '1' : '0'
+            },
+            success: function(response) {
+                if (response.success) alert('Copyright settings saved!');
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Save Copyright Settings');
+            }
+        });
+    });
+
+    // =========================================================================
+    // BACKUP TAB
+    // =========================================================================
+
+    // Export Settings as JSON
+    $(document).on('click', '#tmv-export-settings-btn', function() {
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Exporting...');
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_export_backup',
+                nonce: tmvAdmin.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    var blob = new Blob([JSON.stringify(response.data.data, null, 2)], { type: 'application/json' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'tmv-settings-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    alert('Settings exported successfully!');
+                }
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Export All Settings (JSON)');
+            }
+        });
+    });
+
+    // Export Applications CSV
+    $(document).on('click', '#tmv-export-apps-csv-btn', function() {
+        $('.tmv-export-csv-btn').trigger('click');
+    });
+
+    // File drop zone
+    var importData = null;
+
+    $(document).on('click', '#tmv-import-drop-zone', function() {
+        $('#tmv-import-file').trigger('click');
+    });
+
+    $(document).on('change', '#tmv-import-file', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(evt) {
+            try {
+                importData = evt.target.result;
+                JSON.parse(importData);
+                $('#tmv-import-settings-btn').prop('disabled', false);
+                $('#tmv-import-status').text('File loaded: ' + file.name).css('color', 'green');
+            } catch(err) {
+                $('#tmv-import-status').text('Invalid JSON file').css('color', 'red');
+                importData = null;
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    $(document).on('click', '#tmv-import-settings-btn', function() {
+        if (!importData) return;
+        if (!confirm('Import settings? This will overwrite existing settings.')) return;
+        var $btn = $(this);
+        $btn.prop('disabled', true).text('Importing...');
+        $.ajax({
+            url: tmvAdmin.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'tmv_import_backup',
+                nonce: tmvAdmin.nonce,
+                import_data: importData
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert(response.data.message);
+                    location.reload();
+                } else {
+                    alert(response.data.message || 'Import failed');
+                }
+            },
+            complete: function() {
+                $btn.prop('disabled', false).text('Import Settings');
+            }
+        });
+    });
+
+    // Clear all data
+    $(document).on('click', '#tmv-clear-all-data-btn', function() {
+        var confirm1 = confirm('WARNING: This will permanently delete ALL plugin data. Are you sure?');
+        if (!confirm1) return;
+        var confirm2 = prompt('Type DELETE to confirm:');
+        if (confirm2 !== 'DELETE') {
+            alert('Cancelled.');
+            return;
+        }
+        alert('Data clearing is disabled for safety. Use database tools directly.');
     });
 
 })(jQuery);

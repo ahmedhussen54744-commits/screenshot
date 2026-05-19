@@ -7,6 +7,10 @@ class TMV_Frontend {
         add_shortcode('tmv_application_form', array(__CLASS__, 'render_application_form'));
         add_shortcode('tmv_verification_portal', array(__CLASS__, 'render_verification_portal'));
         add_shortcode('tmv_news_feed', array(__CLASS__, 'render_news_feed'));
+        add_shortcode('tmv_faq_page', array(__CLASS__, 'render_faq_page'));
+        add_shortcode('tmv_contact_page', array(__CLASS__, 'render_contact_page'));
+        add_shortcode('tmv_about_page', array(__CLASS__, 'render_about_page'));
+        add_shortcode('tmv_services_page', array(__CLASS__, 'render_services_page'));
         add_action('wp_ajax_tmv_submit_application', array(__CLASS__, 'handle_application'));
         add_action('wp_ajax_nopriv_tmv_submit_application', array(__CLASS__, 'handle_application'));
         add_action('wp_ajax_tmv_verify_trademark', array(__CLASS__, 'verify_trademark'));
@@ -450,5 +454,187 @@ class TMV_Frontend {
         );
         
         wp_send_json_success($result);
+    }
+
+    public static function render_faq_page() {
+        $faqs = get_option('tmv_faqs', array());
+
+        ob_start();
+        ?>
+        <div class="tmv-faq-container">
+            <div class="tmv-faq-header">
+                <h2>Frequently Asked Questions</h2>
+                <p>Find answers to common questions about trademark registration and verification.</p>
+            </div>
+            <div class="tmv-faq-list">
+                <?php if (!empty($faqs) && is_array($faqs)) : ?>
+                    <?php foreach ($faqs as $index => $faq) : ?>
+                        <div class="tmv-faq-item">
+                            <div class="tmv-faq-question">
+                                <span><?php echo esc_html($faq['question']); ?></span>
+                                <span class="tmv-faq-icon">&#9662;</span>
+                            </div>
+                            <div class="tmv-faq-answer">
+                                <?php echo wp_kses_post($faq['answer']); ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else : ?>
+                    <p>No FAQs available at this time. Please check back later.</p>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    public static function render_contact_page() {
+        $email   = get_option('tmv_contact_email', 'info@dpdt-registry.gov.bd');
+        $phone   = get_option('tmv_contact_phone', '+880-2-1234567');
+        $address = get_option('tmv_contact_address', 'Department of Patents, Designs & Trademarks, Dhaka, Bangladesh');
+        $hours   = get_option('tmv_contact_hours', 'Sunday - Thursday: 9:00 AM - 5:00 PM');
+
+        $social_links = array(
+            'facebook'  => get_option('tmv_social_facebook', ''),
+            'twitter'   => get_option('tmv_social_twitter', ''),
+            'linkedin'  => get_option('tmv_social_linkedin', ''),
+            'youtube'   => get_option('tmv_social_youtube', ''),
+        );
+
+        ob_start();
+        ?>
+        <div class="tmv-contact-container">
+            <div class="tmv-contact-header">
+                <h2>Contact Us</h2>
+                <p>Get in touch with the Department of Patents, Designs &amp; Trademarks.</p>
+            </div>
+            <div class="tmv-contact-grid">
+                <div class="tmv-contact-card">
+                    <div class="tmv-contact-card-icon">&#9993;</div>
+                    <h3>Email</h3>
+                    <p><a href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a></p>
+                </div>
+                <div class="tmv-contact-card">
+                    <div class="tmv-contact-card-icon">&#9742;</div>
+                    <h3>Phone</h3>
+                    <p><a href="tel:<?php echo esc_attr($phone); ?>"><?php echo esc_html($phone); ?></a></p>
+                </div>
+                <div class="tmv-contact-card">
+                    <div class="tmv-contact-card-icon">&#9873;</div>
+                    <h3>Address</h3>
+                    <p><?php echo esc_html($address); ?></p>
+                </div>
+                <div class="tmv-contact-card">
+                    <div class="tmv-contact-card-icon">&#9200;</div>
+                    <h3>Office Hours</h3>
+                    <p><?php echo esc_html($hours); ?></p>
+                </div>
+            </div>
+            <?php
+            $has_social = false;
+            foreach ($social_links as $url) {
+                if (!empty($url)) { $has_social = true; break; }
+            }
+            if ($has_social) :
+            ?>
+            <div class="tmv-contact-social" style="text-align:center;margin-top:40px;">
+                <h3 style="margin-bottom:16px;">Follow Us</h3>
+                <div class="tmv-footer-social" style="justify-content:center;">
+                    <?php foreach ($social_links as $platform => $url) :
+                        if (!empty($url)) : ?>
+                        <a href="<?php echo esc_url($url); ?>" class="tmv-social-link tmv-social-link--<?php echo esc_attr($platform); ?>" target="_blank" rel="noopener noreferrer" aria-label="<?php echo esc_attr(ucfirst($platform)); ?>">
+                            <span class="tmv-social-icon tmv-social-icon--<?php echo esc_attr($platform); ?>"></span>
+                        </a>
+                    <?php endif; endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    public static function render_about_page() {
+        ob_start();
+        ?>
+        <div class="tmv-about-container">
+            <div class="tmv-about-header">
+                <h2>About Us</h2>
+            </div>
+            <div class="tmv-about-content">
+                <p>The Department of Patents, Designs &amp; Trademarks (DPDT) is the government authority responsible for the registration and protection of intellectual property rights in Bangladesh. Established since 2009, our digital verification system provides a secure and efficient way to verify trademark registrations.</p>
+                <p>Our mission is to safeguard innovation and creativity by providing accessible, transparent, and reliable intellectual property services to businesses and individuals across the nation.</p>
+
+                <div class="tmv-about-features">
+                    <div class="tmv-about-feature">
+                        <div class="tmv-about-feature-icon">&#128274;</div>
+                        <h4>Secure Verification</h4>
+                        <p>Advanced security measures to protect trademark data integrity.</p>
+                    </div>
+                    <div class="tmv-about-feature">
+                        <div class="tmv-about-feature-icon">&#9889;</div>
+                        <h4>Fast Processing</h4>
+                        <p>Streamlined digital processes for quick trademark registration.</p>
+                    </div>
+                    <div class="tmv-about-feature">
+                        <div class="tmv-about-feature-icon">&#127760;</div>
+                        <h4>Digital Platform</h4>
+                        <p>24/7 online access to verification and application services.</p>
+                    </div>
+                    <div class="tmv-about-feature">
+                        <div class="tmv-about-feature-icon">&#128101;</div>
+                        <h4>Expert Support</h4>
+                        <p>Dedicated team of IP professionals to assist you.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
+    public static function render_services_page() {
+        ob_start();
+        ?>
+        <div class="tmv-services-container">
+            <div class="tmv-services-header">
+                <h2>Our Services</h2>
+                <p>Comprehensive intellectual property services for businesses and individuals.</p>
+            </div>
+            <div class="tmv-services-grid">
+                <div class="tmv-service-card">
+                    <div class="tmv-service-icon">&#128270;</div>
+                    <h3>Trademark Verification</h3>
+                    <p>Instantly verify the authenticity of any registered trademark using our secure digital verification system with QR code support.</p>
+                </div>
+                <div class="tmv-service-card">
+                    <div class="tmv-service-icon">&#128221;</div>
+                    <h3>Trademark Registration</h3>
+                    <p>Apply for trademark registration online. Our streamlined process guides you through every step of the application.</p>
+                </div>
+                <div class="tmv-service-card">
+                    <div class="tmv-service-icon">&#128196;</div>
+                    <h3>Certificate Issuance</h3>
+                    <p>Receive official digital certificates with unique verification codes and QR codes for authenticated trademark proof.</p>
+                </div>
+                <div class="tmv-service-card">
+                    <div class="tmv-service-icon">&#128269;</div>
+                    <h3>Trademark Search</h3>
+                    <p>Search our comprehensive database to check availability before filing your trademark application.</p>
+                </div>
+                <div class="tmv-service-card">
+                    <div class="tmv-service-icon">&#128272;</div>
+                    <h3>IP Protection</h3>
+                    <p>Protect your intellectual property with our monitoring and enforcement support services.</p>
+                </div>
+                <div class="tmv-service-card">
+                    <div class="tmv-service-icon">&#128218;</div>
+                    <h3>Consultation</h3>
+                    <p>Get expert advice from our team of intellectual property professionals on registration, disputes, and strategy.</p>
+                </div>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
     }
 }

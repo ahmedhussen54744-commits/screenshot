@@ -26,6 +26,7 @@ class TMV_Admin {
         add_action('wp_ajax_tmv_add_announcement', array(__CLASS__, 'ajax_add_announcement'));
         add_action('wp_ajax_tmv_delete_announcement', array(__CLASS__, 'ajax_delete_announcement'));
         add_action('wp_ajax_tmv_manage_ip_list', array(__CLASS__, 'ajax_manage_ip_list'));
+        add_action('wp_ajax_tmv_save_security_option', array(__CLASS__, 'ajax_save_security_option'));
         add_action('wp_ajax_tmv_save_faq', array(__CLASS__, 'ajax_save_faq'));
         add_action('wp_ajax_tmv_delete_faq', array(__CLASS__, 'ajax_delete_faq'));
         add_action('wp_ajax_tmv_save_contact_info', array(__CLASS__, 'ajax_save_contact_info'));
@@ -404,6 +405,14 @@ class TMV_Admin {
                 <button class="tmv-tab-btn" data-tab="content">Content</button>
                 <button class="tmv-tab-btn" data-tab="verification">Verification</button>
                 <button class="tmv-tab-btn" data-tab="maintenance">Maintenance</button>
+                <button class="tmv-tab-btn" data-tab="settings-extended">Settings Extended</button>
+                <button class="tmv-tab-btn" data-tab="appearance">Appearance</button>
+                <button class="tmv-tab-btn" data-tab="notifications">Notifications</button>
+                <button class="tmv-tab-btn" data-tab="reports">Reports</button>
+                <button class="tmv-tab-btn" data-tab="workflow">Workflow</button>
+                <button class="tmv-tab-btn" data-tab="seo">SEO</button>
+                <button class="tmv-tab-btn" data-tab="copyright">Copyright</button>
+                <button class="tmv-tab-btn" data-tab="backup">Backup</button>
             </div>
             
             <div class="tmv-tab-content active" id="tmv-tab-overview">
@@ -435,6 +444,30 @@ class TMV_Admin {
             </div>
             <div class="tmv-tab-content" id="tmv-tab-maintenance">
                 <?php self::render_tab_maintenance(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-settings-extended">
+                <?php TMV_Admin_Extended::render_tab_settings_extended(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-appearance">
+                <?php TMV_Admin_Extended::render_tab_appearance(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-notifications">
+                <?php TMV_Admin_Extended::render_tab_notifications(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-reports">
+                <?php TMV_Admin_Extended::render_tab_reports(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-workflow">
+                <?php TMV_Admin_Extended::render_tab_workflow(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-seo">
+                <?php TMV_Admin_Extended::render_tab_seo(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-copyright">
+                <?php TMV_Admin_Extended::render_tab_copyright(); ?>
+            </div>
+            <div class="tmv-tab-content" id="tmv-tab-backup">
+                <?php TMV_Admin_Extended::render_tab_backup(); ?>
             </div>
         </div>
         <?php
@@ -1016,6 +1049,7 @@ class TMV_Admin {
         <div class="tmv-security-columns">
             <div class="tmv-section-box">
                 <h3>IP Blacklist</h3>
+                <p class="description">IPs listed below are blocked from accessing the site. Auto-added IPs from failed login lockouts can be removed here.</p>
                 <div class="tmv-ip-input-row">
                     <input type="text" id="tmv-blacklist-ip-input" placeholder="Enter IP address" />
                     <button class="button" id="tmv-add-blacklist-btn">Add to Blacklist</button>
@@ -1046,6 +1080,15 @@ class TMV_Admin {
             <label>
                 <input type="checkbox" id="tmv-2fa-toggle" <?php checked($tfa_enabled, '1'); ?> />
                 Enable Two-Factor Authentication for admin accounts
+            </label>
+        </div>
+
+        <div class="tmv-section-box">
+            <h3>Login Lockout Settings</h3>
+            <p class="description">After 15 failed login attempts, the IP is blocked. Choose whether the block is permanent (requires manual removal above) or temporary (7 days).</p>
+            <label>
+                <input type="checkbox" id="tmv-auto-blacklist-permanent" <?php checked(get_option('tmv_auto_blacklist_permanent', '0'), '1'); ?> />
+                Use permanent blacklist for 15+ failed attempts (if unchecked, uses a 7-day temporary block)
             </label>
         </div>
         
@@ -1516,6 +1559,24 @@ class TMV_Admin {
         
         update_option($option_key, $list);
         wp_send_json_success(array('message' => 'IP list updated'));
+    }
+
+    public static function ajax_save_security_option() {
+        check_ajax_referer('tmv_admin_nonce', 'nonce');
+        if (!current_user_can('manage_options')) wp_die('Unauthorized');
+
+        $key = sanitize_text_field($_POST['option_key'] ?? '');
+        $value = sanitize_text_field($_POST['option_value'] ?? '');
+
+        // Only allow specific security options to be saved via this handler
+        $allowed_keys = array('tmv_auto_blacklist_permanent', 'tmv_2fa_enabled');
+        if (!in_array($key, $allowed_keys, true)) {
+            wp_send_json_error(array('message' => 'Invalid option key'));
+            return;
+        }
+
+        update_option($key, $value);
+        wp_send_json_success(array('message' => 'Setting saved'));
     }
     
     public static function ajax_save_faq() {
