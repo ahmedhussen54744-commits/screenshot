@@ -6,6 +6,7 @@ class TMV_Frontend {
     public static function init() {
         add_shortcode('tmv_application_form', array(__CLASS__, 'render_application_form'));
         add_shortcode('tmv_verification_portal', array(__CLASS__, 'render_verification_portal'));
+        add_shortcode('tmv_news_feed', array(__CLASS__, 'render_news_feed'));
         add_action('wp_ajax_tmv_submit_application', array(__CLASS__, 'handle_application'));
         add_action('wp_ajax_nopriv_tmv_submit_application', array(__CLASS__, 'handle_application'));
         add_action('wp_ajax_tmv_verify_trademark', array(__CLASS__, 'verify_trademark'));
@@ -19,33 +20,7 @@ class TMV_Frontend {
             <div class="tmv-3d-card">
                 <div class="tmv-form-header">
                     <div class="tmv-dpdt-logo">
-                        <svg viewBox="0 0 120 120" width="80" height="80">
-                            <circle cx="60" cy="60" r="58" fill="#1a5c3a" stroke="#ffd700" stroke-width="2"/>
-                            <circle cx="60" cy="60" r="50" fill="none" stroke="#fff" stroke-width="1"/>
-                            <!-- 4 quadrants: agriculture, education, science, industry -->
-                            <line x1="60" y1="15" x2="60" y2="105" stroke="#fff" stroke-width="0.5" opacity="0.5"/>
-                            <line x1="15" y1="60" x2="105" y2="60" stroke="#fff" stroke-width="0.5" opacity="0.5"/>
-                            <!-- Agriculture (top-left) -->
-                            <path d="M35 35 L38 28 L41 35 M36 32 Q38 25 40 32" fill="none" stroke="#ffd700" stroke-width="1.5"/>
-                            <path d="M33 40 Q38 38 43 40" fill="none" stroke="#ffd700" stroke-width="1"/>
-                            <!-- Education (top-right) -->
-                            <path d="M75 30 L80 27 L85 30 L80 33 Z" fill="#ffd700"/>
-                            <line x1="80" y1="33" x2="80" y2="40" stroke="#ffd700" stroke-width="1"/>
-                            <!-- Science (bottom-left) -->
-                            <circle cx="38" cy="78" r="5" fill="none" stroke="#ffd700" stroke-width="1"/>
-                            <circle cx="38" cy="78" r="2" fill="#ffd700"/>
-                            <ellipse cx="38" cy="78" rx="8" ry="3" fill="none" stroke="#ffd700" stroke-width="0.8" transform="rotate(45 38 78)"/>
-                            <!-- Industry (bottom-right) -->
-                            <path d="M75 75 L78 68 L81 75 L84 68 L87 75 L87 85 L75 85 Z" fill="none" stroke="#ffd700" stroke-width="1.2"/>
-                            <!-- Bengali text around the circle -->
-                            <path id="dpdt-text-path" d="M60 12 A48 48 0 1 1 59.9 12" fill="none"/>
-                            <text font-size="6" fill="#fff" font-family="sans-serif">
-                                <textPath href="#dpdt-text-path" startOffset="5%">&#x09AA;&#x09C7;&#x099F;&#x09C7;&#x09A8;&#x09CD;&#x099F;, &#x09A1;&#x09BF;&#x099C;&#x09BE;&#x0987;&#x09A8; &#x0993; &#x099F;&#x09CD;&#x09B0;&#x09C7;&#x09A1;&#x09AE;&#x09BE;&#x09B0;&#x09CD;&#x0995;&#x09B8; &#x0985;&#x09A7;&#x09BF;&#x09A6;&#x09AA;&#x09CD;&#x09A4;&#x09B0;</textPath>
-                            </text>
-                            <!-- Center emblem -->
-                            <circle cx="60" cy="60" r="12" fill="#fff" opacity="0.15"/>
-                            <text x="60" y="63" text-anchor="middle" font-size="8" fill="#fff" font-weight="bold">DPDT</text>
-                        </svg>
+                        <?php echo TMV_Logos::get_dpdt_logo_html(80, 80); ?>
                     </div>
                     <h2 class="tmv-form-title">Trademark Registration Application</h2>
                     <p class="tmv-form-subtitle">Department of Patents, Designs & Trademarks</p>
@@ -160,27 +135,7 @@ class TMV_Frontend {
         <div class="tmv-verify-container" id="tmv-verify-portal">
             <div class="tmv-verify-header">
                 <div class="tmv-govt-logo">
-                    <svg viewBox="0 0 100 100" width="80" height="80">
-                        <!-- Outer green border -->
-                        <circle cx="50" cy="50" r="48" fill="none" stroke="#27ae60" stroke-width="4"/>
-                        <!-- Red circle background -->
-                        <circle cx="50" cy="50" r="44" fill="#c0392b"/>
-                        <!-- Gold ring -->
-                        <circle cx="50" cy="50" r="38" fill="none" stroke="#ffd700" stroke-width="2"/>
-                        <!-- Inner dark circle -->
-                        <circle cx="50" cy="50" r="36" fill="#a93226"/>
-                        <!-- Bangladesh map outline (stylized) - gold/yellow -->
-                        <path d="M45 28 Q47 30 46 33 Q44 36 45 38 L44 40 Q43 42 44 44 Q45 46 44 48 L43 50 Q42 52 43 55 Q44 57 43 59 L42 62 Q43 65 45 67 Q47 69 50 70 Q53 69 55 67 Q57 65 58 62 L57 59 Q56 57 57 55 Q58 52 57 50 L56 48 Q55 46 56 44 Q57 42 56 40 L55 38 Q54 36 55 33 Q53 30 52 28 Q50 26 48 27 Q46 27 45 28 Z" fill="#ffd700" stroke="#ffed4a" stroke-width="0.5"/>
-                        <!-- Bengali text - Government of Bangladesh -->
-                        <path id="bd-seal-top" d="M50 10 A40 40 0 0 1 90 50" fill="none"/>
-                        <path id="bd-seal-bottom" d="M90 50 A40 40 0 0 1 10 50" fill="none"/>
-                        <text font-size="5.5" fill="#fff" font-family="sans-serif">
-                            <textPath href="#bd-seal-top" startOffset="10%">&#x0997;&#x09A3;&#x09AA;&#x09CD;&#x09B0;&#x099C;&#x09BE;&#x09A4;&#x09A8;&#x09CD;&#x09A4;&#x09CD;&#x09B0;&#x09C0;</textPath>
-                        </text>
-                        <text font-size="5.5" fill="#fff" font-family="sans-serif">
-                            <textPath href="#bd-seal-bottom" startOffset="15%">&#x09AC;&#x09BE;&#x0982;&#x09B2;&#x09BE;&#x09A6;&#x09C7;&#x09B6; &#x09B8;&#x09B0;&#x0995;&#x09BE;&#x09B0;</textPath>
-                        </text>
-                    </svg>
+                    <?php echo TMV_Logos::get_bd_seal_html(80, 80); ?>
                 </div>
                 <h1 class="tmv-verify-title">Trademark Verification System</h1>
                 <p class="tmv-verify-dept">DEPARTMENT OF PATENTS, DESIGNS & TRADEMARKS</p>
@@ -243,6 +198,77 @@ class TMV_Frontend {
         return ob_get_clean();
     }
     
+    public static function render_news_feed($atts = array()) {
+        $atts = shortcode_atts(array(
+            'count' => 6,
+            'category' => '',
+        ), $atts, 'tmv_news_feed');
+
+        $query_args = array(
+            'post_type' => 'post',
+            'posts_per_page' => intval($atts['count']),
+            'post_status' => 'publish',
+        );
+
+        if (!empty($atts['category'])) {
+            $query_args['category_name'] = sanitize_text_field($atts['category']);
+        }
+
+        $news_query = new WP_Query($query_args);
+
+        ob_start();
+        ?>
+        <div class="tmv-news-section tmv-news-shortcode">
+            <div class="tmv-news-grid">
+                <?php
+                if ($news_query->have_posts()) :
+                    while ($news_query->have_posts()) : $news_query->the_post();
+                        ?>
+                        <article class="tmv-post-card">
+                            <div class="tmv-post-thumbnail">
+                                <?php if (has_post_thumbnail()) : ?>
+                                    <?php the_post_thumbnail('medium_large'); ?>
+                                <?php endif; ?>
+                                <?php
+                                $video_id = get_post_meta(get_the_ID(), 'tmv_post_video', true);
+                                if ($video_id) : ?>
+                                    <div class="tmv-play-overlay">
+                                        <div class="tmv-play-icon">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M8 5v14l11-7z" fill="#1a5c3a"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="tmv-post-content">
+                                <div class="tmv-post-meta">
+                                    <span class="tmv-post-date"><?php echo get_the_date(); ?></span>
+                                    <span class="tmv-post-category"><?php
+                                        $categories = get_the_category();
+                                        if (!empty($categories)) {
+                                            echo esc_html($categories[0]->name);
+                                        }
+                                    ?></span>
+                                </div>
+                                <h3 class="tmv-post-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+                                <p class="tmv-post-excerpt"><?php echo wp_trim_words(get_the_excerpt(), 20, '...'); ?></p>
+                                <a href="<?php the_permalink(); ?>" class="tmv-read-more">Read More</a>
+                            </div>
+                        </article>
+                        <?php
+                    endwhile;
+                    wp_reset_postdata();
+                else :
+                    echo '<p>No news posts found.</p>';
+                endif;
+                ?>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
+    }
+
     public static function handle_application() {
         // Verify nonce
         if (!wp_verify_nonce($_POST['tmv_nonce'], 'tmv_submit_app')) {
@@ -278,14 +304,25 @@ class TMV_Frontend {
         }
         
         // Create post
-        $post_id = wp_insert_post(array(
+        $post_args = array(
             'post_type' => 'trademark_app',
             'post_title' => $tm_number . ' - ' . $owner,
             'post_status' => 'publish',
-        ));
+        );
+
+        if (is_user_logged_in()) {
+            $post_args['post_author'] = get_current_user_id();
+        }
+
+        $post_id = wp_insert_post($post_args);
         
         if (is_wp_error($post_id)) {
             wp_send_json_error(array('message' => 'Failed to submit application.'));
+        }
+
+        // Associate user with application
+        if (is_user_logged_in()) {
+            update_post_meta($post_id, 'tmv_applicant_user_id', get_current_user_id());
         }
         
         // Save meta
@@ -356,11 +393,27 @@ class TMV_Frontend {
         
         $query = new WP_Query($args);
         
+        // Log verification attempt
+        $log = get_option('tmv_verification_log', array());
+        $log[] = array(
+            'code' => $search,
+            'result' => $query->have_posts() ? 'found' : 'not_found',
+            'ip' => $_SERVER['REMOTE_ADDR'],
+            'time' => current_time('mysql')
+        );
+        if (count($log) > 500) $log = array_slice($log, -500);
+        update_option('tmv_verification_log', $log, false);
+        
         if (!$query->have_posts()) {
             wp_send_json_error(array('message' => 'No verified trademark found with this number.'));
         }
         
         $post = $query->posts[0];
+        
+        // Increment verification count on the found post
+        $verify_count = intval(get_post_meta($post->ID, 'tmv_verify_count', true));
+        update_post_meta($post->ID, 'tmv_verify_count', $verify_count + 1);
+        
         $meta = get_post_meta($post->ID);
         
         $logo_url = '';

@@ -14,6 +14,7 @@ add_action('after_setup_theme', 'tmv_theme_setup');
 function tmv_theme_setup() {
     add_theme_support('title-tag');
     add_theme_support('post-thumbnails');
+    add_theme_support('post-formats', array('video', 'gallery', 'image'));
     add_theme_support('custom-logo', array(
         'width' => 200,
         'height' => 80,
@@ -28,6 +29,61 @@ function tmv_theme_setup() {
         'primary' => 'Primary Navigation',
         'footer' => 'Footer Navigation',
     ));
+}
+
+// Allow video MIME types for upload
+add_filter('upload_mimes', 'tmv_video_mime_types');
+function tmv_video_mime_types($mimes) {
+    $mimes['mp4'] = 'video/mp4';
+    $mimes['webm'] = 'video/webm';
+    $mimes['ogg'] = 'video/ogg';
+    return $mimes;
+}
+
+// Video Meta Box for Posts
+add_action('add_meta_boxes', 'tmv_add_video_meta_box');
+function tmv_add_video_meta_box() {
+    add_meta_box(
+        'tmv_post_video_box',
+        'Post Video',
+        'tmv_render_video_meta_box',
+        'post',
+        'side',
+        'default'
+    );
+}
+
+function tmv_render_video_meta_box($post) {
+    wp_nonce_field('tmv_save_video_meta', 'tmv_video_nonce');
+    $video_id = get_post_meta($post->ID, 'tmv_post_video', true);
+    $video_url = $video_id ? wp_get_attachment_url($video_id) : '';
+    ?>
+    <p>
+        <label for="tmv_post_video">Video Attachment ID:</label><br>
+        <input type="text" id="tmv_post_video" name="tmv_post_video" value="<?php echo esc_attr($video_id); ?>" style="width:100%;" />
+    </p>
+    <?php if ($video_url) : ?>
+    <p><small>Current: <?php echo esc_html(basename($video_url)); ?></small></p>
+    <?php endif; ?>
+    <p><small>Enter the attachment ID of an uploaded video (mp4, webm, ogg).</small></p>
+    <?php
+}
+
+add_action('save_post', 'tmv_save_video_meta_box');
+function tmv_save_video_meta_box($post_id) {
+    if (!isset($_POST['tmv_video_nonce']) || !wp_verify_nonce($_POST['tmv_video_nonce'], 'tmv_save_video_meta')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+    if (isset($_POST['tmv_post_video'])) {
+        $video_id = sanitize_text_field($_POST['tmv_post_video']);
+        update_post_meta($post_id, 'tmv_post_video', $video_id);
+    }
 }
 
 // Enqueue Styles & Scripts

@@ -38,6 +38,9 @@ require_once TMV_PLUGIN_DIR . 'includes/class-tmv-admin.php';
 require_once TMV_PLUGIN_DIR . 'includes/class-tmv-frontend.php';
 require_once TMV_PLUGIN_DIR . 'includes/class-tmv-security.php';
 require_once TMV_PLUGIN_DIR . 'includes/class-tmv-api.php';
+require_once TMV_PLUGIN_DIR . 'includes/class-tmv-logos.php';
+require_once TMV_PLUGIN_DIR . 'includes/class-tmv-certificate.php';
+require_once TMV_PLUGIN_DIR . 'includes/class-tmv-auth.php';
 
 // Activation Hook
 register_activation_hook(__FILE__, 'tmv_activate_plugin');
@@ -84,6 +87,54 @@ function tmv_activate_plugin() {
             'post_content' => '[tmv_application_form]',
         ));
     }
+
+    // Create login page
+    $login_page = get_page_by_path('login');
+    if (!$login_page) {
+        wp_insert_post(array(
+            'post_title' => 'Login',
+            'post_name' => 'login',
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'post_content' => '[tmv_login_form]',
+        ));
+    }
+
+    // Create register page
+    $register_page = get_page_by_path('register');
+    if (!$register_page) {
+        wp_insert_post(array(
+            'post_title' => 'Register',
+            'post_name' => 'register',
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'post_content' => '[tmv_register_form]',
+        ));
+    }
+
+    // Create dashboard page
+    $dashboard_page = get_page_by_path('dashboard');
+    if (!$dashboard_page) {
+        wp_insert_post(array(
+            'post_title' => 'Dashboard',
+            'post_name' => 'dashboard',
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'post_content' => '[tmv_user_dashboard]',
+        ));
+    }
+
+    // Create password reset page
+    $reset_page = get_page_by_path('password-reset');
+    if (!$reset_page) {
+        wp_insert_post(array(
+            'post_title' => 'Password Reset',
+            'post_name' => 'password-reset',
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'post_content' => '[tmv_password_reset]',
+        ));
+    }
 }
 
 // Deactivation Hook
@@ -99,6 +150,7 @@ add_action('plugins_loaded', function() {
     TMV_Frontend::init();
     TMV_Security::init();
     TMV_API::init();
+    TMV_Auth::init();
 });
 
 // Enqueue Scripts & Styles
@@ -122,7 +174,7 @@ function tmv_enqueue_assets() {
 // Admin Enqueue
 add_action('admin_enqueue_scripts', 'tmv_admin_enqueue');
 function tmv_admin_enqueue($hook) {
-    if (strpos($hook, 'trademark') !== false || get_post_type() === 'trademark_app') {
+    if (strpos($hook, 'trademark') !== false || get_post_type() === 'trademark_app' || strpos($hook, 'tmv-settings') !== false) {
         wp_enqueue_style('tmv-admin', TMV_PLUGIN_URL . 'assets/css/admin.css', array(), TMV_VERSION);
         wp_enqueue_script('tmv-qrcode', 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js', array(), null, true);
         wp_enqueue_script('tmv-admin', TMV_PLUGIN_URL . 'assets/js/admin.js', array('jquery'), TMV_VERSION, true);

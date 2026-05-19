@@ -60,8 +60,36 @@
             }, 50);
         }
 
+        // ===== Video Post Card Click Handler =====
+        $(document).on('click', '.tmv-play-overlay', function(e) {
+            e.preventDefault();
+            var postLink = $(this).closest('.tmv-post-card').find('.tmv-post-title a').attr('href');
+            if (postLink) {
+                window.location.href = postLink;
+            }
+        });
+
+        // ===== Video Player Lazy Loading =====
+        var videoObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    var video = entry.target;
+                    var source = video.querySelector('source');
+                    if (source && source.dataset.src) {
+                        source.src = source.dataset.src;
+                        video.load();
+                    }
+                    videoObserver.unobserve(video);
+                }
+            });
+        }, { threshold: 0.25 });
+
+        document.querySelectorAll('.tmv-video-player video').forEach(function(video) {
+            videoObserver.observe(video);
+        });
+
         // ===== Staggered Reveal for Grid Items =====
-        var gridSelectors = '.tmv-form-grid > *, .tmv-details-grid > *, .tmv-features-grid > *';
+        var gridSelectors = '.tmv-form-grid > *, .tmv-details-grid > *, .tmv-features-grid > *, .tmv-news-grid > *';
         var gridItems = document.querySelectorAll(gridSelectors);
 
         if (gridItems.length > 0) {
